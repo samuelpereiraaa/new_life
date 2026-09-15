@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Life | Novo documento</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a class="brand" th:href="@{/}" aria-label="Ir para o início">
+                <span class="brand-logo"><img th:src="@{/img/newlife-logo-dark.png}" alt=""></span>
+                <span class="brand-name">New Life <small>STARTUP DOCS</small></span>
+            </a>
+            <nav class="main-nav" aria-label="Navegação principal">
+                <a class="nav-link" th:href="@{/}">Início</a>
+                <a class="nav-link active" th:href="@{/documentos/novo}">Novo documento</a>
+                <a class="nav-link" th:href="@{/documentos}">Documentos</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="container documents-page" aria-labelledby="formTitle">
+            <div class="page-heading">
+                <div>
+                    <p class="section-label">CADASTRO</p>
+                    <h1 id="formTitle">Novo documento</h1>
+                    <p>Preencha os campos e envie o formulário para o backend.</p>
+                </div>
+                <a class="button secondary" th:href="@{/documentos}">← Ver documentos</a>
+            </div>
+
+            <form class="document-form" th:action="@{/documentos}" th:object="${documentoForm}" method="post">
+                <label for="nome">Nome do documento</label>
+                <input id="nome" type="text" th:field="*{nome}" placeholder="Ex.: Contrato com fornecedor" required>
+
+                <label for="categoria">Categoria</label>
+                <select id="categoria" th:field="*{categoria}">
+                    <option value="Financeiro">Financeiro</option>
+                    <option value="Legal">Legal</option>
+                    <option value="Operacional">Operacional</option>
+                </select>
+
+                <label for="responsavel">Responsável</label>
+                <input id="responsavel" type="text" th:field="*{responsavel}" placeholder="Ex.: Ana" required>
+
+                <label for="status">Status inicial</label>
+                <select id="status" th:field="*{status}">
+                    <option value="Pendente">Pendente</option>
+                    <option value="Em análise">Em análise</option>
+                    <option value="Aprovado">Aprovado</option>
+                </select>
+
+                <button class="button" type="submit">Salvar documento</button>
+            </form>
+        </section>
+    </main>
+
+    <footer class="site-footer"><div class="container footer-content"><span>New Life · protótipo Spring Boot</span><span>ORGANIZE · ACOMPANHE · EVOLUA</span></div></footer>
+</body>
+
+</html>

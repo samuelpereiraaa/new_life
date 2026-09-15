@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="New Life: documentos de startups organizados em um só lugar.">
+    <title>New Life | Documentos de startups</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container header-content">
+            <a class="brand" th:href="@{/}" aria-label="Ir para o início">
+                <span class="brand-logo"><img th:src="@{/img/newlife-logo-dark.png}" alt=""></span>
+                <span class="brand-name">New Life <small>STARTUP DOCS</small></span>
+            </a>
+
+            <button class="menu-button" id="menuButton" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+
+            <nav class="main-nav" id="mainNav" aria-label="Navegação principal">
+                <a class="nav-link active" th:href="@{/}">Início</a>
+                <a class="nav-link" th:href="@{/documentos}">Documentos</a>
+                <a class="nav-link" th:href="@{/#startups}">Startups</a>
+                <a class="nav-link" th:href="@{/#analises}">Análises</a>
+                <a class="nav-link" th:href="@{/#sobre}">Sobre</a>
+            </nav>
+
+            <label class="search-box">
+                <span aria-hidden="true">⌕</span>
+                <input id="searchInput" type="search" placeholder="Buscar documento..." aria-label="Buscar documento">
+            </label>
+        </div>
+    </header>
+
+    <main>
+        <section class="home-view" id="homeView" aria-labelledby="homeTitle">
+            <div class="container hero">
+                <div class="hero-copy">
+                    <p class="eyebrow">DOCUMENTOS EM ORDEM. DECISÕES EM MOVIMENTO.</p>
+                    <h1 id="homeTitle">Tudo o que sua startup precisa, <em>em um só lugar.</em></h1>
+                    <p>Centralize documentos, acompanhe o processo e mantenha cada informação pronta para a próxima etapa.</p>
+                    <div class="trust-list">
+                        <span>✓ Ambiente seguro</span>
+                        <span>✓ Envio simples e rápido</span>
+                    </div>
+                </div>
+
+                <section class="upload-card" id="upload" aria-labelledby="uploadTitle">
+                    <p class="section-label">COMECE POR AQUI</p>
+                    <h2 id="uploadTitle">Envie seus documentos</h2>
+                    <p>Adicione um arquivo para simular o envio no protótipo.</p>
+                    <label class="drop-zone" id="dropZone" for="fileInput">
+                        <input id="fileInput" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                        <span class="upload-icon" aria-hidden="true">↑</span>
+                        <strong>Arraste arquivos para cá</strong>
+                        <span>ou clique para selecionar no dispositivo</span>
+                        <span class="button">Selecionar arquivos</span>
+                        <small>PDF, DOCX, XLSX, PNG ou JPG · até 20 MB</small>
+                    </label>
+                    <div class="file-list" id="fileList" aria-live="polite"></div>
+                </section>
+            </div>
+
+            <section class="container platform" id="sobre" aria-labelledby="aboutTitle">
+                <div>
+                    <p class="section-label">SOBRE A PLATAFORMA</p>
+                    <h2 id="aboutTitle">Menos dispersão.<br><em>Mais clareza.</em></h2>
+                    <p>A New Life centraliza o recebimento, a organização e o acompanhamento dos documentos da sua startup.</p>
+                </div>
+                <div class="stats" id="startups">
+                    <article><strong>24</strong><span>Documentos enviados</span></article>
+                    <article><strong>8</strong><span>Startups cadastradas</span></article>
+                    <article id="analises"><strong>5</strong><span>Análises em andamento</span></article>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-content">
+            <span>New Life · uma estrutura pronta para sua startup crescer.</span>
+            <span>ORGANIZE · ACOMPANHE · EVOLUA</span>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/index.js}" defer></script>
+</body>
+
+</html>
