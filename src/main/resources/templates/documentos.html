@@ -52,6 +52,7 @@
                 </div>
 
                 <p class="flash-message" th:if="${mensagem}" th:text="${mensagem}">Documento cadastrado com sucesso!</p>
+                <p class="flash-message error" role="alert" th:if="${erro}" th:text="${erro}">Documento não encontrado.</p>
 
                 <form class="document-filter" th:action="@{/documentos}" th:object="${filtro}" method="get">
                     <label for="termo">Filtrar por nome, categoria ou responsável</label>
@@ -70,15 +71,25 @@
                     <h2>Documentos cadastrados</h2>
                     <p class="result-count"><strong th:text="${#lists.size(documentos)}">9</strong> resultado(s) encontrado(s)</p>
                     <table>
-                        <thead><tr><th>Documento</th><th>Categoria</th><th>Responsável</th><th>Status</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Documento</th><th>Categoria</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead>
                         <tbody>
-                            <tr th:each="documento, item : ${documentos}">
-                                <td><a class="table-link" th:href="@{/documentos/{indice}(indice=${item.index})}" th:text="${documento.nome}">Fluxo de caixa 2025</a></td>
+                            <tr th:each="documento : ${documentos}">
+                                <td th:text="${documento.id}">1</td>
+                                <td><a class="table-link" th:href="@{/documentos/{id}(id=${documento.id})}" th:text="${documento.nome}">Fluxo de caixa 2025</a></td>
                                 <td th:text="${documento.categoria}">Financeiro</td>
                                 <td th:text="${documento.responsavel}">Marina</td>
                                 <td><span class="status" th:classappend="${documento.statusClass}" th:text="${documento.status}">Aprovado</span></td>
+                                <td>
+                                    <div class="document-actions">
+                                        <a class="button secondary" th:href="@{/documentos/{id}/editar(id=${documento.id})}">Editar</a>
+                                        <form th:action="@{/documentos/{id}/excluir(id=${documento.id})}" method="post"
+                                              onsubmit="return confirm('Deseja excluir este documento?')">
+                                            <button class="button danger" type="submit">Excluir</button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
-                            <tr th:if="${#lists.isEmpty(documentos)}"><td colspan="4">Nenhum documento encontrado.</td></tr>
+                            <tr th:if="${#lists.isEmpty(documentos)}"><td colspan="6">Nenhum documento encontrado.</td></tr>
                         </tbody>
                     </table>
                 </div>
