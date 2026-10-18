@@ -35,9 +35,17 @@
             </div>
 
             <div class="table-card detail-card">
+                <p><strong>ID</strong><span th:text="${documento.id}">1</span></p>
                 <p><strong>Categoria</strong><span th:text="${documento.categoria}">Financeiro</span></p>
                 <p><strong>Responsável</strong><span th:text="${documento.responsavel}">Marina</span></p>
                 <p><strong>Status</strong><span class="status" th:classappend="${documento.statusClass}" th:text="${documento.status}">Aprovado</span></p>
+            </div>
+            <div class="document-actions">
+                <a class="button secondary" th:href="@{/documentos/{id}/editar(id=${documento.id})}">Editar</a>
+                <form th:action="@{/documentos/{id}/excluir(id=${documento.id})}" method="post"
+                      onsubmit="return confirm('Deseja excluir este documento?')">
+                    <button class="button danger" type="submit">Excluir</button>
+                </form>
             </div>
         </section>
     </main>
