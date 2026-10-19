@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Life | Cadastros auxiliares</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="container documents-page">
+    <div class="page-heading">
+        <div><h1>Cadastros auxiliares</h1><p>Cadastre uma startup, um usuário e uma categoria. Depois, vincule o usuário à startup.</p></div>
+        <a class="button secondary" th:href="@{/documentos}">Voltar aos documentos</a>
+    </div>
+    <p class="flash-message" th:if="${mensagem}" th:text="${mensagem}"></p>
+    <p class="flash-message error" role="alert" th:if="${erro}" th:text="${erro}"></p>
+    <div class="table-grid">
+        <form class="document-form" th:action="@{/cadastros/startups}" th:object="${startupForm}" method="post">
+            <h2>Startup</h2>
+            <label for="startupNome">Nome</label><input id="startupNome" th:field="*{nome}" th:errorclass="campo-erro" required maxlength="150">
+            <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></p>
+            <label for="cnpj">CNPJ (opcional, sem pontuação)</label><input id="cnpj" th:field="*{cnpj}" th:errorclass="campo-erro" maxlength="14">
+            <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('cnpj')}" th:errors="*{cnpj}"></p>
+            <button class="button" type="submit">Cadastrar startup</button>
+        </form>
+        <form class="document-form" th:action="@{/cadastros/usuarios}" th:object="${usuarioForm}" method="post">
+            <h2>Usuário</h2>
+            <label for="usuarioNome">Nome</label><input id="usuarioNome" th:field="*{nome}" th:errorclass="campo-erro" required maxlength="150">
+            <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></p>
+            <label for="email">E-mail</label><input id="email" th:field="*{email}" th:errorclass="campo-erro" type="email" required maxlength="254">
+            <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+            <label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="new-password" required maxlength="72">
+            <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></p>
+            <button class="button" type="submit">Cadastrar usuário</button>
+        </form>
+        <form class="document-form" th:action="@{/cadastros/categorias}" th:object="${categoriaForm}" method="post">
+            <h2>Categoria</h2>
+            <label for="categoriaNome">Nome</label><input id="categoriaNome" th:field="*{nome}" th:errorclass="campo-erro" required maxlength="80">
+            <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></p>
+            <button class="button" type="submit">Cadastrar categoria</button>
+            <ul><li th:each="categoria : ${categorias}" th:text="${categoria.nome}"></li></ul>
+        </form>
+        <form class="document-form" th:action="@{/cadastros/vinculos}" th:object="${vinculoForm}" method="post">
+            <h2>Vincular usuário à startup</h2>
+            <label for="startupId">Startup</label>
+            <select id="startupId" th:field="*{startupId}" th:errorclass="campo-erro" required>
+                <option value="">Selecione</option>
+                <option th:each="startup : ${startups}" th:value="${startup.id}" th:text="${startup.nome}"></option>
+            </select>
+            <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('startupId')}" th:errors="*{startupId}"></p>
+            <label for="usuarioId">Usuário</label>
+            <select id="usuarioId" th:field="*{usuarioId}" th:errorclass="campo-erro" required>
+                <option value="">Selecione</option>
+                <option th:each="usuario : ${usuarios}" th:value="${usuario.id}" th:text="${usuario.nome}"></option>
+            </select>
+            <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('usuarioId')}" th:errors="*{usuarioId}"></p>
+            <button class="button" type="submit">Criar vínculo</button>
+        </form>
+    </div>
+    <div class="table-card" style="margin-top: 24px">
+        <h2>Vínculos cadastrados</h2>
+        <table>
+            <thead><tr><th>Startup</th><th>Usuário</th></tr></thead>
+            <tbody>
+                <tr th:each="vinculo : ${vinculos}"><td th:text="${vinculo.startup.nome}"></td><td th:text="${vinculo.usuario.nome}"></td></tr>
+                <tr th:if="${#lists.isEmpty(vinculos)}"><td colspan="2">Nenhum vínculo cadastrado.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

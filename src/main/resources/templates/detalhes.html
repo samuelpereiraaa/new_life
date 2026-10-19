@@ -36,8 +36,9 @@
 
             <div class="table-card detail-card">
                 <p><strong>ID</strong><span th:text="${documento.id}">1</span></p>
-                <p><strong>Categoria</strong><span th:text="${documento.categoria}">Financeiro</span></p>
-                <p><strong>Responsável</strong><span th:text="${documento.responsavel}">Marina</span></p>
+                <p><strong>Startup</strong><span th:text="${documento.startup.nome}">Startup</span></p>
+                <p><strong>Categoria</strong><span th:text="${documento.categoria.nome}">Financeiro</span></p>
+                <p><strong>Responsável</strong><span th:text="${documento.responsavel.usuario.nome}">Marina</span></p>
                 <p><strong>Status</strong><span class="status" th:classappend="${documento.statusClass}" th:text="${documento.status}">Aprovado</span></p>
             </div>
             <div class="document-actions">
