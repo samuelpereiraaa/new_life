@@ -19,9 +19,21 @@ public class CadastrosService {
     private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
     private final StartupUsuarioRepository vinculoRepository;
+    private final TagRepository tagRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public List<Startup> listarStartups() { return startupRepository.findAll(); }
+    public List<Tag> listarTags() { return tagRepository.findAll(org.springframework.data.domain.Sort.by("nome")); }
+
+    @Transactional
+    public void cadastrarTag(TagForm form) {
+        Tag tag = new Tag();
+        tag.setNome(form.getNome().trim());
+        try { tagRepository.saveAndFlush(tag); }
+        catch (DataIntegrityViolationException ex) {
+            throw new RegraNegocioException("nome", "Tag já cadastrada.");
+        }
+    }
     public List<Usuario> listarUsuarios() { return usuarioRepository.findAll(); }
     public List<Categoria> listarCategorias() { return categoriaRepository.findAll(); }
     public List<StartupUsuario> listarVinculos() { return vinculoRepository.findAll(); }

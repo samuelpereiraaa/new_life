@@ -27,6 +27,7 @@ class DocumentoCrudTests {
     @Autowired private StartupRepository startups;
     @Autowired private UsuarioRepository usuarios;
     @Autowired private CategoriaRepository categorias;
+    @Autowired private TagRepository tags;
     @Autowired private ComentarioRepository comentarios;
     @Autowired private EntityManagerFactory entityManagerFactory;
     @Autowired private JdbcTemplate jdbc;
@@ -42,7 +43,7 @@ class DocumentoCrudTests {
         }
         // Limpa apenas o banco de testes selecionado pelo perfil test.
         for (String tabela : new String[]{"comentario", "documento_versao", "historico_status",
-                "documento", "startup_usuario", "categoria", "usuario", "startup"}) {
+                "documento_tag", "tag", "documento", "startup_usuario", "categoria", "usuario", "startup"}) {
             jdbc.update("DELETE FROM " + tabela);
         }
         assertTrue(get("/documentos").body().contains("Nenhum documento encontrado"));
@@ -97,12 +98,32 @@ class DocumentoCrudTests {
         assertEquals(0, documentos.count());
         assertRedirect(post("/cadastros/vinculos", "startupId=" + startupId + "&usuarioId=" + usuarioId), "/cadastros");
         assertTrue(get("/cadastros").body().contains("Startup Teste"));
-        HttpResponse<String> criado = post("/documentos", "nome=Contrato+social" + campos);
+        assertEquals(200, post("/cadastros/tags", "nome=+++").statusCode());
+        assertEquals(0, tags.count());
+        assertRedirect(post("/cadastros/tags", "nome=Urgente"), "/cadastros");
+        assertRedirect(post("/cadastros/tags", "nome=Interno"), "/cadastros");
+        assertTrue(post("/cadastros/tags", "nome=Urgente").body().contains("Tag já cadastrada."));
+        long tagId = tags.findAll().get(0).getId();
+        long outraTagId = tags.findAll().get(1).getId();
+        String tagsSelecionadas = "&tagIds=" + tagId + "&tagIds=" + outraTagId;
+        HttpResponse<String> criado = post("/documentos", "nome=Contrato+social" + campos + tagsSelecionadas);
         assertRedirect(criado, "/documentos");
         assertFlash(criado, "Documento cadastrado com sucesso!");
         Documento documento = documentos.findAll().get(0);
         long id = documento.getId();
         assertNotNull(documento.getCriadoEm());
+        assertEquals(2, documento.getTags().size());
+        assertEquals(2, jdbc.queryForObject("SELECT COUNT(*) FROM documento_tag WHERE documento_id = ?", Integer.class, id));
+        assertTrue(get("/documentos/" + id).body().contains("Urgente"));
+        assertTrue(get("/documentos/" + id + "/editar").body().contains("checked=\"checked\""));
+        var tagInexistente = post("/documentos/" + id + "/editar", "nome=Nao+salvar" + campos + "&tagIds=999999");
+        assertEquals(200, tagInexistente.statusCode());
+        assertTrue(tagInexistente.body().contains("Uma das tags selecionadas não existe mais."));
+        assertEquals(2, documentos.findById(id).orElseThrow().getTags().size());
+        var erroComTags = post("/documentos/" + id + "/editar", "nome=+++" + campos + tagsSelecionadas);
+        assertTrue(erroComTags.body().contains("checked=\"checked\""));
+        assertRedirect(post("/documentos/" + id + "/editar", "nome=Contrato+social" + campos + "&tagIds=" + tagId), "/documentos");
+        assertEquals(1, documentos.findById(id).orElseThrow().getTags().size());
         assertEquals(startupId, documento.getStartup().getId());
         // Uma sessao independente confirma a leitura do registro no banco.
         var em = entityManagerFactory.createEntityManager();
@@ -118,6 +139,7 @@ class DocumentoCrudTests {
         assertFlash(atualizado, "Documento atualizado com sucesso!");
         Documento salvo = documentos.findById(id).orElseThrow();
         assertEquals("Aprovado", salvo.getStatus());
+        assertTrue(salvo.getTags().isEmpty());
         assertEquals(documento.getCriadoEm().toInstant(), salvo.getCriadoEm().toInstant());
         assertEquals(1, documentos.count());
         var edicaoVazia = post("/documentos/" + id + "/editar", "nome=+++" + campos);
@@ -145,10 +167,14 @@ class DocumentoCrudTests {
         assertFlash(bloqueado, "Não é possível excluir");
         assertTrue(documentos.existsById(id));
         comentarios.deleteById(comentario.getId());
+        assertRedirect(post("/documentos/" + id + "/editar", "nome=Contrato+editado" + campos + tagsSelecionadas), "/documentos");
+        assertRedirect(post("/documentos", "nome=Outro+documento" + campos + tagsSelecionadas), "/documentos");
         var excluido = post("/documentos/" + id + "/excluir", "");
         assertRedirect(excluido, "/documentos");
         assertFlash(excluido, "Documento excluído com sucesso!");
         assertFalse(documentos.existsById(id));
+        assertEquals(2, tags.count());
+        assertEquals(2, documentos.findAll().get(0).getTags().size());
         for (String rota : new String[]{"/documentos/999999", "/documentos/999999/editar"}) {
             var ausente = get(rota);
             assertRedirect(ausente, "/documentos");

@@ -9,11 +9,11 @@ import org.springframework.data.jpa.repository.EntityGraph;
 public interface DocumentoRepository extends JpaRepository<Documento, Long> {
 
     @Override
-    @EntityGraph(attributePaths = {"categoria", "responsavel", "responsavel.startup", "responsavel.usuario"})
+    @EntityGraph(attributePaths = {"tags", "categoria", "responsavel", "responsavel.startup", "responsavel.usuario"})
     List<Documento> findAll();
 
     @Override
-    @EntityGraph(attributePaths = {"categoria", "responsavel", "responsavel.startup", "responsavel.usuario"})
+    @EntityGraph(attributePaths = {"tags", "categoria", "responsavel", "responsavel.startup", "responsavel.usuario"})
     Optional<Documento> findById(Long id);
 }
 

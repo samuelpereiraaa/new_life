@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,6 +29,13 @@ public class Documento {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
+
+    @ManyToMany
+    @JoinTable(name = "documento_tag",
+            joinColumns = @JoinColumn(name = "documento_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @OrderBy("nome ASC")
+    private Set<Tag> tags = new LinkedHashSet<>();
 
     @Column(name = "nome", nullable = false, length = 255)
     private String nome;

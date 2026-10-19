@@ -3,10 +3,14 @@ package com.example.demo.new_life.model;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
 public class DocumentoForm {
+    private Set<@NotNull @Positive Long> tagIds = new LinkedHashSet<>();
+
     @NotBlank(message = "Informe o nome do documento.")
     @Size(max = 255, message = "O nome deve ter até 255 caracteres.")
     private String nome;

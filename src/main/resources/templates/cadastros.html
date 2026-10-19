@@ -15,6 +15,14 @@
     <p class="flash-message" th:if="${mensagem}" th:text="${mensagem}"></p>
     <p class="flash-message error" role="alert" th:if="${erro}" th:text="${erro}"></p>
     <div class="table-grid">
+        <form class="document-form" th:action="@{/cadastros/tags}" th:object="${tagForm}" method="post">
+            <h2>Tag</h2>
+            <label for="tagNome">Nome</label>
+            <input id="tagNome" th:field="*{nome}" th:errorclass="campo-erro" required maxlength="100">
+            <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></p>
+            <button class="button" type="submit">Cadastrar tag</button>
+            <ul><li th:each="tag : ${tags}" th:text="${tag.nome}"></li></ul>
+        </form>
         <form class="document-form" th:action="@{/cadastros/startups}" th:object="${startupForm}" method="post">
             <h2>Startup</h2>
             <label for="startupNome">Nome</label><input id="startupNome" th:field="*{nome}" th:errorclass="campo-erro" required maxlength="150">

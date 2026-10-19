@@ -16,6 +16,22 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CadastrosController {
     private final CadastrosService cadastrosService;
 
+    @ModelAttribute("tagForm")
+    public TagForm tagForm() { return new TagForm(); }
+
+    @PostMapping("/tags")
+    public String tag(@Valid @ModelAttribute("tagForm") TagForm form,
+            BindingResult result, Model model, RedirectAttributes flash) {
+        if (result.hasErrors()) return listar(model);
+        try {
+            cadastrosService.cadastrarTag(form);
+        } catch (RegraNegocioException ex) {
+            ex.getErros().forEach((campo, mensagem) -> result.rejectValue(campo, "negocio", mensagem));
+            return listar(model);
+        }
+        return sucesso(flash);
+    }
+
     @ModelAttribute("startupForm")
     public StartupForm startupForm() { return new StartupForm(); }
     @ModelAttribute("usuarioForm")
@@ -27,6 +43,7 @@ public class CadastrosController {
 
     @GetMapping
     public String listar(Model model) {
+        model.addAttribute("tags", cadastrosService.listarTags());
         model.addAttribute("startups", cadastrosService.listarStartups());
         model.addAttribute("usuarios", cadastrosService.listarUsuarios());
         model.addAttribute("categorias", cadastrosService.listarCategorias());

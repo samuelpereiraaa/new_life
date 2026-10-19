@@ -41,6 +41,11 @@
                 <p><strong>Responsável</strong><span th:text="${documento.responsavel.usuario.nome}">Marina</span></p>
                 <p><strong>Status</strong><span class="status" th:classappend="${documento.statusClass}" th:text="${documento.status}">Aprovado</span></p>
             </div>
+            <div class="table-card">
+                <h2>Tags</h2>
+                <p th:if="${#sets.isEmpty(documento.tags)}">Nenhuma tag vinculada.</p>
+                <ul><li th:each="tag : ${documento.tags}" th:text="${tag.nome}"></li></ul>
+            </div>
             <div class="document-actions">
                 <a class="button secondary" th:href="@{/documentos/{id}/editar(id=${documento.id})}">Editar</a>
                 <form th:action="@{/documentos/{id}/excluir(id=${documento.id})}" method="post"
