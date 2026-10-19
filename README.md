@@ -49,7 +49,12 @@ não implementa login ou controle de acesso. A aplicação ainda não possui aut
 O pacote `entity` contém os mapeamentos JPA com Lombok. `StartupUsuarioId` representa
 a chave composta. `Documento.responsavel` aponta para o vínculo entre usuário e startup.
 O pacote `repository` contém interfaces Spring Data JPA para as oito entidades.
-Os controllers consultam os repositories; não existe mais lista de documentos em memória.
+Os controllers chamam `DocumentoService` e `CadastrosService`. Os serviços coordenam
+os repositories, verificam vínculos e duplicidades e normalizam os dados. As gravações
+usam `@Transactional`; falhas de integridade são convertidas em `RegraNegocioException`
+e a transação é revertida antes de o controller apresentar o erro.
+Os serviços não recebem `Model` ou `BindingResult`, nem retornam nomes de templates.
+Não existe mais lista de documentos em memória.
 
 As associações necessárias às telas são carregadas por `@EntityGraph`. O Open Session
 in View está desativado. Datas são preenchidas por `@PrePersist` quando não informadas.
@@ -64,7 +69,7 @@ Referências inexistentes e duplicidades também são apresentadas no campo corr
 O CNPJ opcional tem limite de tamanho; ainda não há validação de dígitos verificadores.
 O limite de 72 bytes UTF-8 do BCrypt é verificado além do tamanho em caracteres.
 
-Camada Service, histórico automático de status e os fluxos de upload/comentários
+Histórico automático de status e os fluxos de upload/comentários
 não estão implementados. O upload da página inicial continua sendo uma simulação.
 
 ## Testes
