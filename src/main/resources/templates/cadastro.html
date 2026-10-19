@@ -66,6 +66,16 @@
                 </select>
                 <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('responsavelId')}" th:errors="*{responsavelId}"></p>
 
+                <fieldset>
+                    <legend>Tags (opcional)</legend>
+                    <p th:if="${#lists.isEmpty(tags)}">Cadastre tags em <a th:href="@{/cadastros}">Cadastros auxiliares</a>.</p>
+                    <label th:each="tag : ${tags}" style="display: flex; gap: 8px; align-items: center">
+                        <input type="checkbox" th:field="*{tagIds}" th:value="${tag.id}" style="width: auto">
+                        <span th:text="${tag.nome}"></span>
+                    </label>
+                    <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('tagIds')}" th:errors="*{tagIds}"></p>
+                </fieldset>
+
                 <label for="status">Status</label>
                 <select id="status" th:field="*{status}" th:errorclass="campo-erro">
                     <option value="Pendente">Pendente</option>

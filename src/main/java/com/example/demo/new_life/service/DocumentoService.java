@@ -17,6 +17,7 @@ public class DocumentoService {
     private final DocumentoRepository documentoRepository;
     private final CategoriaRepository categoriaRepository;
     private final StartupUsuarioRepository vinculoRepository;
+    private final TagRepository tagRepository;
 
     public List<Documento> listar(String busca) {
         String termo = busca == null ? "" : busca.toLowerCase(Locale.ROOT).trim();
@@ -62,6 +63,12 @@ public class DocumentoService {
         var vinculo = form.getStartupId() == null || form.getResponsavelId() == null ? null
                 : vinculoRepository.findById(new StartupUsuarioId(form.getStartupId(), form.getResponsavelId())).orElse(null);
         Map<String, String> erros = new LinkedHashMap<>();
+        var tagIds = form.getTagIds() == null ? Collections.<Long>emptySet() : form.getTagIds();
+        if (tagIds.stream().anyMatch(id -> id == null || id <= 0)) {
+            throw new RegraNegocioException("tagIds", "Selecione tags válidas.");
+        }
+        var tags = tagRepository.findAllById(tagIds);
+        if (tags.size() != tagIds.size()) erros.put("tagIds", "Uma das tags selecionadas não existe mais.");
         if (categoria == null) erros.put("categoriaId", "Selecione uma categoria existente.");
         if (vinculo == null) erros.put("responsavelId", "Selecione um responsável vinculado à startup.");
         if (form.getStatus() == null || !List.of("Pendente", "Em análise", "Aprovado").contains(form.getStatus())) {
@@ -72,6 +79,8 @@ public class DocumentoService {
         documento.setCategoria(categoria);
         documento.setResponsavel(vinculo);
         documento.setStatus(form.getStatus());
+        documento.getTags().clear();
+        documento.getTags().addAll(tags);
         try {
             return documentoRepository.saveAndFlush(documento);
         } catch (DataIntegrityViolationException ex) {

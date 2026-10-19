@@ -63,6 +63,7 @@ public class PageController {
         formulario.setStartupId(documento.getResponsavel().getId().getStartupId());
         formulario.setResponsavelId(documento.getResponsavel().getId().getUsuarioId());
         formulario.setStatus(documento.getStatus());
+        documento.getTags().forEach(tag -> formulario.getTagIds().add(tag.getId()));
         model.addAttribute("documentoForm", formulario);
         model.addAttribute("documentoId", id);
         prepararFormulario(model);
@@ -112,6 +113,7 @@ public class PageController {
     }
 
     private void prepararFormulario(Model model) {
+        model.addAttribute("tags", cadastrosService.listarTags());
         model.addAttribute("categorias", cadastrosService.listarCategorias());
         model.addAttribute("startups", cadastrosService.listarStartups());
         model.addAttribute("usuarios", cadastrosService.listarUsuarios());

@@ -83,3 +83,14 @@ O mesmo teste pode ser executado contra um PostgreSQL descartável cujo banco se
 chame `newlife_test`, sobrescrevendo as propriedades `spring.datasource` via Maven.
 Os testes apagam os dados desse banco antes do cenário; nunca aponte testes para
 um banco com dados que precisam ser preservados.
+
+### Tags dos documentos
+
+Tags permitem classificar documentos com múltiplos marcadores, como Urgente e Interno.
+Cadastre as tags em `/cadastros` e selecione-as no formulário de criação ou edição.
+As seleções aparecem nos detalhes e podem ser removidas desmarcando as opções.
+
+`Documento.tags` usa `@ManyToMany` e `@JoinTable` com a tabela `documento_tag`.
+A migração `V2__tags_documentos.sql` cria as novas tabelas sem alterar a V1.
+Não há cascata de remoção: excluir um documento remove seus vínculos, preservando
+as tags usadas por outros documentos. O Service verifica se os IDs enviados existem.
