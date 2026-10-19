@@ -34,28 +34,45 @@
                 <a class="button secondary" th:href="@{/documentos}">← Ver documentos</a>
             </div>
 
+            <p><a th:href="@{/cadastros}">Cadastrar startups, usuários, categorias e vínculos</a></p>
+            <p class="flash-message error" role="alert" th:if="${erro}" th:text="${erro}"></p>
+            <p th:if="${#lists.isEmpty(categorias) or #lists.isEmpty(startups) or #lists.isEmpty(usuarios)}">
+                Antes de cadastrar documentos, preencha os cadastros auxiliares e vincule um usuário à startup.
+            </p>
             <form class="document-form"
                   th:action="${documentoId != null} ? @{/documentos/{id}/editar(id=${documentoId})} : @{/documentos}"
                   th:object="${documentoForm}" method="post">
                 <label for="nome">Nome do documento</label>
-                <input id="nome" type="text" th:field="*{nome}" placeholder="Ex.: Contrato com fornecedor" required>
+                <input id="nome" type="text" th:field="*{nome}" th:errorclass="campo-erro" maxlength="255" placeholder="Ex.: Contrato com fornecedor" required>
+                <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></p>
 
                 <label for="categoria">Categoria</label>
-                <select id="categoria" th:field="*{categoria}">
-                    <option value="Financeiro">Financeiro</option>
-                    <option value="Legal">Legal</option>
-                    <option value="Operacional">Operacional</option>
+                <select id="categoria" th:field="*{categoriaId}" th:errorclass="campo-erro" required>
+                    <option value="">Selecione uma categoria</option>
+                    <option th:each="categoria : ${categorias}" th:value="${categoria.id}" th:text="${categoria.nome}"></option>
                 </select>
+                <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('categoriaId')}" th:errors="*{categoriaId}"></p>
 
+                <label for="startup">Startup</label>
+                <select id="startup" th:field="*{startupId}" th:errorclass="campo-erro" required>
+                    <option value="">Selecione uma startup</option>
+                    <option th:each="startup : ${startups}" th:value="${startup.id}" th:text="${startup.nome}"></option>
+                </select>
+                <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('startupId')}" th:errors="*{startupId}"></p>
                 <label for="responsavel">Responsável</label>
-                <input id="responsavel" type="text" th:field="*{responsavel}" placeholder="Ex.: Ana" required>
+                <select id="responsavel" th:field="*{responsavelId}" th:errorclass="campo-erro" required>
+                    <option value="">Selecione um usuário vinculado à startup</option>
+                    <option th:each="usuario : ${usuarios}" th:value="${usuario.id}" th:text="${usuario.nome}"></option>
+                </select>
+                <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('responsavelId')}" th:errors="*{responsavelId}"></p>
 
                 <label for="status">Status</label>
-                <select id="status" th:field="*{status}">
+                <select id="status" th:field="*{status}" th:errorclass="campo-erro">
                     <option value="Pendente">Pendente</option>
                     <option value="Em análise">Em análise</option>
                     <option value="Aprovado">Aprovado</option>
                 </select>
+                <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></p>
 
                 <button class="button" type="submit" th:text="${documentoId != null ? 'Salvar alterações' : 'Salvar documento'}">Salvar documento</button>
             </form>

@@ -56,8 +56,15 @@ in View está desativado. Datas são preenchidas por `@PrePersist` quando não i
 A exclusão de um documento com comentários, versões ou histórico é bloqueada e retorna
 uma mensagem de erro, preservando os registros relacionados.
 
-Há verificações básicas de campos e referências antes de salvar. Bean Validation,
-camada Service, histórico automático de status e os fluxos de upload/comentários
+Os formulários usam Bean Validation (`@NotBlank`, `@Size`, `@Email`, `@NotNull`,
+`@Positive` e `@Pattern`). Os controllers recebem `@Valid` seguido de `BindingResult`.
+Quando há erro, retornam o formulário na mesma requisição, com mensagens junto aos
+campos e preservação dos dados e opções. A senha nunca é preenchida na resposta.
+Referências inexistentes e duplicidades também são apresentadas no campo correspondente.
+O CNPJ opcional tem limite de tamanho; ainda não há validação de dígitos verificadores.
+O limite de 72 bytes UTF-8 do BCrypt é verificado além do tamanho em caracteres.
+
+Camada Service, histórico automático de status e os fluxos de upload/comentários
 não estão implementados. O upload da página inicial continua sendo uma simulação.
 
 ## Testes

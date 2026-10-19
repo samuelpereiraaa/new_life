@@ -43,10 +43,11 @@
                     <div>
                         <p class="section-label">CENTRAL DE DOCUMENTOS</p>
                         <h1 id="documentsTitle">Documentos da startup</h1>
-                        <p>Exemplos de informações que podem ser acompanhadas pela equipe.</p>
+                        <p>Documentos cadastrados e acompanhados pela equipe.</p>
                     </div>
                     <div class="heading-actions">
                         <a class="button" th:href="@{/documentos/novo}">+ Novo documento</a>
+                        <a class="button secondary" th:href="@{/cadastros}">Cadastros auxiliares</a>
                         <a class="button secondary" th:href="@{/}">← Voltar ao início</a>
                     </div>
                 </div>
@@ -64,7 +65,7 @@
 
                 <div class="category-list">
                     <span class="category-label">Categorias disponíveis:</span>
-                    <span class="category" th:each="categoria : ${categorias}" th:text="${categoria}">Financeiro</span>
+                    <span class="category" th:each="categoria : ${categorias}" th:text="${categoria.nome}">Financeiro</span>
                 </div>
 
                 <div class="table-card">
@@ -76,8 +77,8 @@
                             <tr th:each="documento : ${documentos}">
                                 <td th:text="${documento.id}">1</td>
                                 <td><a class="table-link" th:href="@{/documentos/{id}(id=${documento.id})}" th:text="${documento.nome}">Fluxo de caixa 2025</a></td>
-                                <td th:text="${documento.categoria}">Financeiro</td>
-                                <td th:text="${documento.responsavel}">Marina</td>
+                                <td th:text="${documento.categoria.nome}">Financeiro</td>
+                                <td th:text="${documento.responsavel.usuario.nome}">Marina</td>
                                 <td><span class="status" th:classappend="${documento.statusClass}" th:text="${documento.status}">Aprovado</span></td>
                                 <td>
                                     <div class="document-actions">
