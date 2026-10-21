@@ -1,27 +1,55 @@
-# New Life
+New Life
 
-Protótipo de organização de documentos de startups, integrado com Spring Boot e Thymeleaf.
+Aplicação web para organizar documentos de startups, desenvolvida com Spring Boot, Thymeleaf e PostgreSQL.
 
-## Tecnologias
+Funcionalidades
 
-- Java 17
-- Spring Boot
-- Spring Web MVC
-- Thymeleaf
-- HTML, CSS e JavaScript
+Cadastro, listagem, pesquisa, edição e exclusão de documentos.
 
-## Como executar
+Cadastro de startups, usuários, categorias e tags.
 
-1. Instale e selecione o JDK 17.
-2. Na raiz do projeto, execute `./mvnw spring-boot:run`.
-3. Acesse `http://localhost:8080`.
+Vínculo de usuários com startups.
 
-## Rotas
+Associação de múltiplas tags aos documentos.
 
-- `GET /` — página inicial e upload simulado.
-- `GET /documentos` — listagem dinâmica recebida do controller.
-- `GET /documentos/novo` — formulário de cadastro.
-- `POST /documentos` — cadastra um documento em memória e redireciona para a lista.
-- `GET /documentos/{indice}` — detalhes de um documento.
+Validação dos formulários e mensagens de sucesso ou erro.
 
-Os documentos cadastrados são armazenados apenas em memória e são perdidos quando a aplicação é encerrada.
+Persistência dos dados no PostgreSQL.
+
+Tecnologias
+
+Java 17 ou superior
+
+Spring Boot
+
+Spring Data JPA / Hibernate
+
+Thymeleaf
+
+Bean Validation
+
+Lombok
+
+PostgreSQL
+
+Flyway
+
+Maven
+
+Organização
+
+controller: requisições e navegação entre páginas.
+
+service: regras de negócio e transações.
+
+repository: acesso aos dados.
+
+entity: entidades mapeadas para o banco.
+
+model: objetos de formulário e filtro.
+
+templates: páginas HTML.
+
+static: estilos, imagens e JavaScript.
+
+db/migration: migrações do banco de dados.
