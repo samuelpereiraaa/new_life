@@ -1,4 +1,6 @@
-# New Life
+# Dupla: Vinícius Henrique e Samuel Pereira
+
+## New Life
 
 Aplicação web para organizar documentos de startups, desenvolvida com Spring Boot, Thymeleaf e PostgreSQL.
 
