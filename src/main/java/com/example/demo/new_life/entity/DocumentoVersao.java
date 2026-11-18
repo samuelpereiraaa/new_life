@@ -30,12 +30,14 @@ public class DocumentoVersao {
     @Column(name = "localizacao_arquivo", nullable = false, columnDefinition = "TEXT")
     private String localizacaoArquivo;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "enviado_por", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "enviado_por")
     private Usuario enviadoPor;
 
     @Column(name = "enviado_em", nullable = false)
     private OffsetDateTime enviadoEm;
+
+    private byte[] conteudo;
 
     @PrePersist
     protected void preencherData() {

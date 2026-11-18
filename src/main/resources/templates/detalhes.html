@@ -46,6 +46,53 @@
                 <p th:if="${#sets.isEmpty(documento.tags)}">Nenhuma tag vinculada.</p>
                 <ul><li th:each="tag : ${documento.tags}" th:text="${tag.nome}"></li></ul>
             </div>
+            <section class="table-card" th:if="${documento.nomePdf != null}">
+                <h2>Análise da startup</h2>
+                <p>Ao solicitar a análise, o PDF será enviado ao Google Gemini.</p>
+                <form method="post" th:action="@{/documentos/{id}/analise(id=${documento.id})}"
+                      onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').textContent='Analisando…'">
+                    <button class="button" type="submit">Analisar documento com Gemini</button>
+                </form>
+                <div th:if="${analise}" style="white-space: pre-wrap" th:text="${analise}"></div>
+            </section>
+            <p role="alert" th:if="${erroAnalise}" th:text="${erroAnalise}"></p>
+            <section class="table-card">
+                <h2>Histórico de status</h2>
+                <p th:if="${historico.isEmpty()}">Nenhuma mudança registrada.</p>
+                <ul><li th:each="h : ${historico}">
+                    <time th:text="${#temporals.format(h.alteradoEm, 'dd/MM/yyyy HH:mm')}"></time>
+                    <span th:text="|${h.statusAnterior ?: 'Inicial'} → ${h.statusNovo}|"></span>
+                </li></ul>
+            </section>
+            <section class="table-card" id="comentarios">
+                <h2>Comentários</h2>
+                <p th:if="${comentarios.isEmpty()}">Nenhum comentário registrado.</p>
+                <article th:each="c : ${comentarios}">
+                    <strong th:text="${c.autor.nome}"></strong>
+                    <time th:text="${#temporals.format(c.criadoEm, 'dd/MM/yyyy HH:mm')}"></time>
+                    <p style="white-space: pre-wrap" th:text="${c.conteudo}"></p>
+                </article>
+                <p role="alert" th:if="${erroComentario}" th:text="${erroComentario}"></p>
+                <form method="post" th:action="@{/documentos/{id}/comentarios(id=${documento.id})}">
+                    <label for="autor">Autor</label>
+                    <select id="autor" name="autorId" required>
+                        <option value="">Selecione o autor</option>
+                        <option th:each="u : ${usuarios}" th:value="${u.id}" th:text="${u.nome}" th:selected="${u.id == autorId}"></option>
+                    </select>
+                    <label for="texto">Comentário</label>
+                    <textarea id="texto" name="texto" maxlength="4000" required th:text="${texto}"></textarea>
+                    <button class="button" type="submit">Adicionar comentário</button>
+                </form>
+            </section>
+            <section class="table-card">
+                <h2>Versões anteriores do PDF</h2>
+                <p th:if="${versoes.isEmpty()}">Nenhuma versão anterior registrada.</p>
+                <ul><li th:each="v : ${versoes}">
+                    <span th:text="|Versão ${v.numeroVersao} · ${v.nomeArquivo}|"></span>
+                    <a th:if="${v.disponivel}" th:href="@{/documentos/{id}/versoes/{n}/arquivo(id=${documento.id},n=${v.numeroVersao})}">Baixar PDF</a>
+                    <span th:unless="${v.disponivel}">Arquivo indisponível</span>
+                </li></ul>
+            </section>
             <div class="document-actions">
                 <a class="button secondary" th:href="@{/documentos/{id}/editar(id=${documento.id})}">Editar</a>
                 <a class="button" th:if="${documento.nomePdf != null}" th:href="@{/documentos/{id}/arquivo(id=${documento.id})}" th:text="|Baixar PDF · ${documento.nomePdf}|"></a>

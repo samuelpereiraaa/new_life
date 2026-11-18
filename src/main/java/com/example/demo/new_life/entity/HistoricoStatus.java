@@ -27,8 +27,8 @@ public class HistoricoStatus {
     @Column(name = "status_novo", nullable = false, length = 20)
     private String statusNovo;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "alterado_por", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "alterado_por")
     private Usuario alteradoPor;
 
     @Column(name = "alterado_em", nullable = false)

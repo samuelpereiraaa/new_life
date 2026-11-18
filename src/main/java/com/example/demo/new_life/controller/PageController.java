@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class PageController {
 
+    private final GeminiService geminiService;
     private final DocumentoService documentoService;
     private final CadastrosService cadastrosService;
 
@@ -53,7 +54,22 @@ public class PageController {
     public String detalhes(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         Documento documento = documentoService.buscarPorId(id);
         if (documento == null) return naoEncontrado(redirectAttributes);
-        model.addAttribute("documento", documento);
+        prepararDetalhes(documento, model);
+        return "detalhes";
+    }
+
+    @PostMapping("/documentos/{id}/analise")
+    public String analisar(@PathVariable Long id, Model model, RedirectAttributes redirect) {
+        Documento documento = documentoService.buscarPorId(id);
+        if (documento == null) return naoEncontrado(redirect);
+        prepararDetalhes(documento, model);
+        try {
+            var anexo = documentoService.buscarAnexo(id).orElseThrow(() ->
+                    new RegraNegocioException("", "Anexe um PDF para solicitar a análise."));
+            model.addAttribute("analise", geminiService.analisar(anexo.getConteudo()));
+        } catch (RegraNegocioException ex) {
+            model.addAttribute("erroAnalise", ex.getMessage());
+        }
         return "detalhes";
     }
 
@@ -127,6 +143,37 @@ public class PageController {
         redirectAttributes.addFlashAttribute("mensagem", id != null
                 ? "Documento atualizado com sucesso!" : "Documento cadastrado com sucesso!");
         return "redirect:/documentos";
+    }
+
+    private void prepararDetalhes(Documento documento, Model model) {
+        Long id = documento.getId();
+        model.addAttribute("documento", documento);
+        model.addAttribute("comentarios", documentoService.comentarios(id));
+        model.addAttribute("usuarios", cadastrosService.listarUsuarios());
+        model.addAttribute("historico", documentoService.historico(id));
+        model.addAttribute("versoes", documentoService.versoes(id));
+    }
+
+    @PostMapping("/documentos/{id}/comentarios")
+    public String comentar(@PathVariable Long id, @RequestParam(required = false) Long autorId,
+            @RequestParam(defaultValue = "") String texto, RedirectAttributes redirect) {
+        try {
+            if (!documentoService.comentar(id, autorId, texto)) return naoEncontrado(redirect);
+        } catch (RegraNegocioException ex) {
+            redirect.addFlashAttribute("erroComentario", ex.getMessage());
+            redirect.addFlashAttribute("texto", texto);
+            redirect.addFlashAttribute("autorId", autorId);
+        }
+        return "redirect:/documentos/" + id + "#comentarios";
+    }
+
+    @GetMapping("/documentos/{id}/versoes/{numero}/arquivo")
+    public ResponseEntity<byte[]> baixarVersao(@PathVariable Long id, @PathVariable Integer numero) {
+        return documentoService.buscarVersao(id, numero).filter(v -> v.getConteudo() != null)
+                .map(v -> ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF)
+                        .header("Content-Disposition", ContentDisposition.attachment()
+                                .filename(v.getNomeArquivo(), StandardCharsets.UTF_8).build().toString())
+                        .body(v.getConteudo())).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     private void prepararFormulario(Model model) {

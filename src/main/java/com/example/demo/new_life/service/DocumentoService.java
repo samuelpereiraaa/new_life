@@ -1,6 +1,6 @@
 package com.example.demo.new_life.service;
 
-import com.example.demo.new_life.entity.AnexoPdf;
+import com.example.demo.new_life.entity.*;
 import org.springframework.util.StringUtils;
 import java.io.IOException;
 import com.example.demo.new_life.entity.Documento;
@@ -22,6 +22,42 @@ public class DocumentoService {
     private final StartupUsuarioRepository vinculoRepository;
     private final TagRepository tagRepository;
     private final AnexoPdfRepository anexos;
+    private final HistoricoStatusRepository historico;
+    private final ComentarioRepository comentarios;
+    private final UsuarioRepository usuarios;
+    private final DocumentoVersaoRepository versoes;
+
+    public List<HistoricoStatus> historico(Long id) {
+        return historico.findByDocumentoIdOrderByIdDesc(id);
+    }
+
+    public List<Comentario> comentarios(Long id) {
+        return comentarios.findByDocumentoIdOrderByIdDesc(id);
+    }
+
+    public List<DocumentoVersaoRepository.Resumo> versoes(Long id) {
+        return versoes.listar(id);
+    }
+
+    public Optional<DocumentoVersao> buscarVersao(Long id, Integer numero) {
+        return versoes.findByDocumentoIdAndNumeroVersao(id, numero);
+    }
+
+    @Transactional
+    public boolean comentar(Long id, Long autorId, String texto) {
+        var documento = documentoRepository.findDocumentoById(id).orElse(null);
+        if (documento == null) return false;
+        if (texto == null || texto.isBlank() || texto.length() > 4000)
+            throw new RegraNegocioException("", "Escreva um comentário de até 4.000 caracteres.");
+        var autor = Optional.ofNullable(autorId).flatMap(usuarios::findById)
+                .orElseThrow(() -> new RegraNegocioException("", "Selecione um autor cadastrado."));
+        var comentario = new Comentario();
+        comentario.setDocumento(documento);
+        comentario.setAutor(autor);
+        comentario.setConteudo(texto.strip());
+        comentarios.save(comentario);
+        return true;
+    }
 
     public Optional<AnexoPdf> buscarAnexo(Long id) {
         return anexos.findById(id);
@@ -47,14 +83,14 @@ public class DocumentoService {
 
     @Transactional
     public Documento atualizar(Long id, DocumentoForm form) {
-        Documento documento = buscarPorId(id);
+        Documento documento = documentoRepository.findDocumentoById(id).orElse(null);
         if (documento == null) return null;
         return salvar(documento, form);
     }
 
     @Transactional
     public boolean excluir(Long id) {
-        Documento documento = buscarPorId(id);
+        Documento documento = documentoRepository.findDocumentoById(id).orElse(null);
         if (documento == null) return false;
         try {
             documentoRepository.delete(documento);
@@ -86,6 +122,13 @@ public class DocumentoService {
         documento.setNome(form.getNome().trim());
         documento.setCategoria(categoria);
         documento.setResponsavel(vinculo);
+        if (documento.getId() != null && !Objects.equals(documento.getStatus(), form.getStatus())) {
+            var registro = new HistoricoStatus();
+            registro.setDocumento(documento);
+            registro.setStatusAnterior(documento.getStatus());
+            registro.setStatusNovo(form.getStatus());
+            historico.save(registro);
+        }
         documento.setStatus(form.getStatus());
         documento.getTags().clear();
         documento.getTags().addAll(tags);
@@ -104,6 +147,19 @@ public class DocumentoService {
             if (bytes.length < 5 || bytes[0] != '%' || bytes[1] != 'P' || bytes[2] != 'D'
                     || bytes[3] != 'F' || bytes[4] != '-') {
                 throw new RegraNegocioException("arquivo", "O arquivo selecionado precisa ser um PDF.");
+            }
+            if (documento.getId() != null) {
+                anexos.findById(documento.getId()).ifPresent(atual -> {
+                    var anteriores = versoes.listar(documento.getId());
+                    int numero = anteriores.isEmpty() ? 1 : anteriores.get(0).getNumeroVersao() + 1;
+                    var versao = new DocumentoVersao();
+                    versao.setDocumento(documento);
+                    versao.setNumeroVersao(numero);
+                    versao.setNomeArquivo(documento.getNomePdf());
+                    versao.setLocalizacaoArquivo("banco");
+                    versao.setConteudo(atual.getConteudo());
+                    versoes.save(versao);
+                });
             }
             documento.setNomePdf(nome);
             Documento salvo = documentoRepository.saveAndFlush(documento);

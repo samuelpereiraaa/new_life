@@ -35,5 +35,20 @@ class AnexoPdfTests {
         Long id = jdbc.queryForObject("select id from documento where nome_pdf='teste.pdf'", Long.class);
         mvc.perform(get("/documentos/{id}/arquivo", id)).andExpect(status().isOk())
                 .andExpect(content().contentType("application/pdf")).andExpect(content().bytes(bytes));
+        var novo = new MockMultipartFile("arquivo", "novo.pdf", "application/pdf", "%PDF-novo".getBytes());
+        mvc.perform(multipart("/documentos/{id}/editar", id).file(novo).param("nome", "Teste PDF")
+                .param("categoriaId", "71001").param("startupId", "71001")
+                .param("responsavelId", "71001").param("status", "Aprovado"))
+                .andExpect(redirectedUrl("/documentos"));
+        mvc.perform(post("/documentos/{id}/comentarios", id).param("autorId", "71001")
+                .param("texto", "Revisado")).andExpect(status().is3xxRedirection());
+        mvc.perform(get("/documentos/{id}", id)).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Revisado")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Pendente → Aprovado")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("teste.pdf")));
+        mvc.perform(get("/documentos/{id}/versoes/1/arquivo", id)).andExpect(status().isOk())
+                .andExpect(content().bytes(bytes));
+        mvc.perform(get("/documentos/{id}/arquivo", id)).andExpect(status().isOk())
+                .andExpect(content().bytes(novo.getBytes()));
     }
 }

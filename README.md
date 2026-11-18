@@ -69,7 +69,7 @@ Referências inexistentes e duplicidades também são apresentadas no campo corr
 O CNPJ opcional tem limite de tamanho; ainda não há validação de dígitos verificadores.
 O limite de 72 bytes UTF-8 do BCrypt é verificado além do tamanho em caracteres.
 
-O cadastro aceita um PDF opcional de até 5 MB, salvo no PostgreSQL e disponível para download nos detalhes. Na edição, enviar outro PDF substitui o anterior. Comentários e histórico automático de status permanecem pendentes.
+O cadastro aceita um PDF opcional de até 5 MB, salvo no PostgreSQL e disponível para download nos detalhes. Na edição, enviar outro PDF arquiva o anterior para download. Os detalhes exibem as mudanças de status e permitem registrar comentários com seleção do autor.
 
 ## Testes
 
