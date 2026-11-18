@@ -1,5 +1,6 @@
 package com.example.demo.new_life.model;
 
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,8 @@ import java.util.Set;
 @Getter
 @Setter
 public class DocumentoForm {
+    private MultipartFile arquivo;
+
     private Set<@NotNull @Positive Long> tagIds = new LinkedHashSet<>();
 
     @NotBlank(message = "Informe o nome do documento.")

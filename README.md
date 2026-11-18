@@ -16,7 +16,7 @@ Aplicação de organização de documentos de startups com Spring Boot, Thymelea
    do PostgreSQL. Salve somente na configuração local, sem compartilhar credenciais.
 4. Os padrões são host `localhost`, porta `5432`, banco `new_life` e usuário `postgres`.
    Para alterar, configure `DB_URL` e `DB_USER` no mesmo local.
-5. Execute a aplicação e abra `http://localhost:8080`.
+5. Execute a aplicação e abra `http://localhost:8081`.
 
 Também é possível executar `./mvnw spring-boot:run` (Windows: `.\mvnw.cmd spring-boot:run`)
 com as mesmas variáveis de ambiente. O arquivo `.env` não é carregado automaticamente.
@@ -69,8 +69,7 @@ Referências inexistentes e duplicidades também são apresentadas no campo corr
 O CNPJ opcional tem limite de tamanho; ainda não há validação de dígitos verificadores.
 O limite de 72 bytes UTF-8 do BCrypt é verificado além do tamanho em caracteres.
 
-Histórico automático de status e os fluxos de upload/comentários
-não estão implementados. O upload da página inicial continua sendo uma simulação.
+O cadastro aceita um PDF opcional de até 5 MB, salvo no PostgreSQL e disponível para download nos detalhes. Na edição, enviar outro PDF substitui o anterior. Comentários e histórico automático de status permanecem pendentes.
 
 ## Testes
 

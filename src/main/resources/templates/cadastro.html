@@ -39,7 +39,7 @@
             <p th:if="${#lists.isEmpty(categorias) or #lists.isEmpty(startups) or #lists.isEmpty(usuarios)}">
                 Antes de cadastrar documentos, preencha os cadastros auxiliares e vincule um usuário à startup.
             </p>
-            <form class="document-form"
+            <form class="document-form" enctype="multipart/form-data"
                   th:action="${documentoId != null} ? @{/documentos/{id}/editar(id=${documentoId})} : @{/documentos}"
                   th:object="${documentoForm}" method="post">
                 <label for="nome">Nome do documento</label>
@@ -84,6 +84,10 @@
                 </select>
                 <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></p>
 
+                <label for="arquivo">Anexar PDF (opcional, até 5 MB)</label>
+                <input id="arquivo" name="arquivo" type="file" accept=".pdf,application/pdf">
+                <small th:if="${documentoId != null}">Selecione um PDF para substituir o anexo atual.</small>
+                <small th:errors="*{arquivo}"></small>
                 <button class="button" type="submit" th:text="${documentoId != null ? 'Salvar alterações' : 'Salvar documento'}">Salvar documento</button>
             </form>
         </section>

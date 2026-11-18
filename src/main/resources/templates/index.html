@@ -52,16 +52,8 @@
                 <section class="upload-card" id="upload" aria-labelledby="uploadTitle">
                     <p class="section-label">COMECE POR AQUI</p>
                     <h2 id="uploadTitle">Envie seus documentos</h2>
-                    <p>Adicione um arquivo para simular o envio no protótipo.</p>
-                    <label class="drop-zone" id="dropZone" for="fileInput">
-                        <input id="fileInput" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
-                        <span class="upload-icon" aria-hidden="true">↑</span>
-                        <strong>Arraste arquivos para cá</strong>
-                        <span>ou clique para selecionar no dispositivo</span>
-                        <span class="button">Selecionar arquivos</span>
-                        <small>PDF, DOCX, XLSX, PNG ou JPG · até 20 MB</small>
-                    </label>
-                    <div class="file-list" id="fileList" aria-live="polite"></div>
+                    <p>Cadastre o documento e anexe seu PDF.</p>
+                    <a class="button" th:href="@{/documentos/novo}">Cadastrar documento</a>
                 </section>
             </div>
 

@@ -19,7 +19,7 @@ class ServiceRulesTests {
         var documentos = mock(DocumentoRepository.class);
         var categorias = mock(CategoriaRepository.class);
         var vinculos = mock(StartupUsuarioRepository.class);
-        var service = new DocumentoService(documentos, categorias, vinculos, mock(TagRepository.class));
+        var service = new DocumentoService(documentos, categorias, vinculos, mock(TagRepository.class), mock(AnexoPdfRepository.class));
         Documento existente = new Documento();
         existente.setNome("Original");
         when(documentos.findById(1L)).thenReturn(Optional.of(existente));
@@ -39,7 +39,7 @@ class ServiceRulesTests {
     @Test
     void atualizacaoDeIdInexistenteNaoCriaDocumento() {
         var documentos = mock(DocumentoRepository.class);
-        var service = new DocumentoService(documentos, mock(CategoriaRepository.class), mock(StartupUsuarioRepository.class), mock(TagRepository.class));
+        var service = new DocumentoService(documentos, mock(CategoriaRepository.class), mock(StartupUsuarioRepository.class), mock(TagRepository.class), mock(AnexoPdfRepository.class));
         when(documentos.findById(999L)).thenReturn(Optional.empty());
         assertNull(service.atualizar(999L, new DocumentoForm()));
         verify(documentos, never()).saveAndFlush(any());

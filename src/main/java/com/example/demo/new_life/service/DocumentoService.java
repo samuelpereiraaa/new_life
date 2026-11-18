@@ -1,5 +1,8 @@
 package com.example.demo.new_life.service;
 
+import com.example.demo.new_life.entity.AnexoPdf;
+import org.springframework.util.StringUtils;
+import java.io.IOException;
 import com.example.demo.new_life.entity.Documento;
 import com.example.demo.new_life.entity.StartupUsuarioId;
 import com.example.demo.new_life.model.DocumentoForm;
@@ -18,6 +21,11 @@ public class DocumentoService {
     private final CategoriaRepository categoriaRepository;
     private final StartupUsuarioRepository vinculoRepository;
     private final TagRepository tagRepository;
+    private final AnexoPdfRepository anexos;
+
+    public Optional<AnexoPdf> buscarAnexo(Long id) {
+        return anexos.findById(id);
+    }
 
     public List<Documento> listar(String busca) {
         String termo = busca == null ? "" : busca.toLowerCase(Locale.ROOT).trim();
@@ -82,7 +90,30 @@ public class DocumentoService {
         documento.getTags().clear();
         documento.getTags().addAll(tags);
         try {
-            return documentoRepository.saveAndFlush(documento);
+            var arquivo = form.getArquivo();
+            if (arquivo == null || (arquivo.isEmpty() && "".equals(arquivo.getOriginalFilename()))) {
+                return documentoRepository.saveAndFlush(documento);
+            }
+            String nome = StringUtils.getFilename(
+                    StringUtils.cleanPath(Objects.toString(arquivo.getOriginalFilename(), "")));
+            if (nome == null || nome.length() > 255 || nome.chars().anyMatch(Character::isISOControl)
+                    || !nome.toLowerCase(Locale.ROOT).endsWith(".pdf") || arquivo.getSize() > 5 * 1024 * 1024) {
+                throw new RegraNegocioException("arquivo", "Selecione um PDF de até 5 MB com um nome válido.");
+            }
+            byte[] bytes = arquivo.getBytes();
+            if (bytes.length < 5 || bytes[0] != '%' || bytes[1] != 'P' || bytes[2] != 'D'
+                    || bytes[3] != 'F' || bytes[4] != '-') {
+                throw new RegraNegocioException("arquivo", "O arquivo selecionado precisa ser um PDF.");
+            }
+            documento.setNomePdf(nome);
+            Documento salvo = documentoRepository.saveAndFlush(documento);
+            var anexo = new AnexoPdf();
+            anexo.setDocumentoId(salvo.getId());
+            anexo.setConteudo(bytes);
+            anexos.save(anexo);
+            return salvo;
+        } catch (IOException ex) {
+            throw new RegraNegocioException("arquivo", "Não foi possível ler o PDF. Selecione o arquivo novamente.");
         } catch (DataIntegrityViolationException ex) {
             throw new RegraNegocioException("", "Não foi possível salvar. Confira se os cadastros vinculados ainda existem.");
         }

@@ -46,6 +46,9 @@ public class Documento {
     @Column(name = "criado_em", nullable = false)
     private OffsetDateTime criadoEm;
 
+    @Column(name = "nome_pdf")
+    private String nomePdf;
+
     @PrePersist
     protected void preencherData() {
         if (criadoEm == null) {

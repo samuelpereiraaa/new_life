@@ -48,6 +48,7 @@
             </div>
             <div class="document-actions">
                 <a class="button secondary" th:href="@{/documentos/{id}/editar(id=${documento.id})}">Editar</a>
+                <a class="button" th:if="${documento.nomePdf != null}" th:href="@{/documentos/{id}/arquivo(id=${documento.id})}" th:text="|Baixar PDF · ${documento.nomePdf}|"></a>
                 <form th:action="@{/documentos/{id}/excluir(id=${documento.id})}" method="post"
                       onsubmit="return confirm('Deseja excluir este documento?')">
                     <button class="button danger" type="submit">Excluir</button>

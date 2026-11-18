@@ -1,5 +1,9 @@
 package com.example.demo.new_life.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.MediaType;
+import java.nio.charset.StandardCharsets;
 import com.example.demo.new_life.entity.Documento;
 import com.example.demo.new_life.model.DocumentoForm;
 import com.example.demo.new_life.model.FiltroDocumento;
@@ -51,6 +55,19 @@ public class PageController {
         if (documento == null) return naoEncontrado(redirectAttributes);
         model.addAttribute("documento", documento);
         return "detalhes";
+    }
+
+    @GetMapping("/documentos/{id}/arquivo")
+    public ResponseEntity<byte[]> baixar(@PathVariable Long id) {
+        Documento documento = documentoService.buscarPorId(id);
+        if (documento == null || documento.getNomePdf() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return documentoService.buscarAnexo(id).map(anexo -> ResponseEntity.ok()
+                .header("Content-Disposition", ContentDisposition.attachment()
+                        .filename(documento.getNomePdf(), StandardCharsets.UTF_8).build().toString())
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(anexo.getConteudo())).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/documentos/{id}/editar")
