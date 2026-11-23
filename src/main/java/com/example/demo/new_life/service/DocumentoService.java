@@ -47,6 +47,7 @@ public class DocumentoService {
     public boolean comentar(Long id, Long autorId, String texto) {
         var documento = documentoRepository.findDocumentoById(id).orElse(null);
         if (documento == null) return false;
+        exigirVinculo(documento.getResponsavel().getId().getStartupId(), autorId);
         if (texto == null || texto.isBlank() || texto.length() > 4000)
             throw new RegraNegocioException("", "Escreva um comentário de até 4.000 caracteres.");
         var autor = Optional.ofNullable(autorId).flatMap(usuarios::findById)
@@ -59,21 +60,24 @@ public class DocumentoService {
         return true;
     }
 
+    public String buscarAutorPdf(Long id) { return anexos.buscarAutor(id).orElse("Autoria não registrada"); }
+
     public Optional<AnexoPdf> buscarAnexo(Long id) {
         return anexos.findById(id);
     }
 
-    public long contarDocumentos() {
-        return documentoRepository.count();
+    public long contarDocumentos(Long ator, String status) {
+        return documentoRepository.contarVisiveis(ator, status);
     }
 
-    public long contarEmAnalise() {
-        return documentoRepository.countByStatus("Em análise");
+    private void exigirVinculo(Long startupId, Long ator) {
+        if (!vinculoRepository.existsById(new StartupUsuarioId(startupId, ator)))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN);
     }
 
-    public List<Documento> listar(String busca, String status) {
+    public List<Documento> listar(String busca, String status, Long ator) {
         String termo = busca == null ? "" : busca.toLowerCase(Locale.ROOT).trim();
-        var documentos = status.isBlank() ? documentoRepository.findAll() : documentoRepository.findByStatus(status);
+        var documentos = documentoRepository.listarVisiveis(ator, status);
         return documentos.stream()
                 .filter(d -> d.getNome().toLowerCase(Locale.ROOT).contains(termo)
                         || d.getCategoria().getNome().toLowerCase(Locale.ROOT).contains(termo)
@@ -81,26 +85,32 @@ public class DocumentoService {
                 .sorted(Comparator.comparing(Documento::getId)).toList();
     }
 
-    public Documento buscarPorId(Long id) {
-        return documentoRepository.findById(id).orElse(null);
+    public Documento buscarPorId(Long id, Long ator) {
+        var documento = documentoRepository.findById(id).orElse(null);
+        if (documento != null) exigirVinculo(documento.getResponsavel().getId().getStartupId(), ator);
+        return documento;
     }
 
     @Transactional
-    public Documento cadastrar(DocumentoForm form) {
-        return salvar(new Documento(), form);
+    public Documento cadastrar(DocumentoForm form, Long ator) {
+        return salvar(new Documento(), form, ator);
     }
 
     @Transactional
-    public Documento atualizar(Long id, DocumentoForm form) {
+    public Documento atualizar(Long id, DocumentoForm form, Long ator) {
         Documento documento = documentoRepository.findDocumentoById(id).orElse(null);
         if (documento == null) return null;
-        return salvar(documento, form);
+        exigirVinculo(documento.getResponsavel().getId().getStartupId(), ator);
+        if (!Objects.equals(documento.getResponsavel().getId().getStartupId(), form.getStartupId()))
+            throw new RegraNegocioException("startupId", "O documento pertence a outra startup.");
+        return salvar(documento, form, ator);
     }
 
     @Transactional
-    public boolean excluir(Long id) {
+    public boolean excluir(Long id, Long ator) {
         Documento documento = documentoRepository.findDocumentoById(id).orElse(null);
         if (documento == null) return false;
+        exigirVinculo(documento.getResponsavel().getId().getStartupId(), ator);
         try {
             documentoRepository.delete(documento);
             documentoRepository.flush();
@@ -110,7 +120,7 @@ public class DocumentoService {
         return true;
     }
 
-    private Documento salvar(Documento documento, DocumentoForm form) {
+    private Documento salvar(Documento documento, DocumentoForm form, Long ator) {
         var categoria = form.getCategoriaId() == null ? null
                 : categoriaRepository.findById(form.getCategoriaId()).orElse(null);
         var vinculo = form.getStartupId() == null || form.getResponsavelId() == null ? null
@@ -128,6 +138,7 @@ public class DocumentoService {
             erros.put("status", "Selecione um status válido.");
         }
         if (!erros.isEmpty()) throw new RegraNegocioException(erros);
+        exigirVinculo(form.getStartupId(), ator);
         documento.setNome(form.getNome().trim());
         documento.setCategoria(categoria);
         documento.setResponsavel(vinculo);
@@ -136,6 +147,7 @@ public class DocumentoService {
             registro.setDocumento(documento);
             registro.setStatusAnterior(documento.getStatus());
             registro.setStatusNovo(form.getStatus());
+            registro.setAlteradoPor(usuarios.getReferenceById(ator));
             historico.save(registro);
         }
         documento.setStatus(form.getStatus());
@@ -166,6 +178,7 @@ public class DocumentoService {
                     versao.setNumeroVersao(numero);
                     versao.setNomeArquivo(documento.getNomePdf());
                     versao.setLocalizacaoArquivo("banco");
+                    versao.setEnviadoPor(atual.getEnviadoPor());
                     versao.setConteudo(atual.getConteudo());
                     versoes.save(versao);
                 });
@@ -174,6 +187,7 @@ public class DocumentoService {
             Documento salvo = documentoRepository.saveAndFlush(documento);
             var anexo = new AnexoPdf();
             anexo.setDocumentoId(salvo.getId());
+            anexo.setEnviadoPor(usuarios.getReferenceById(ator));
             anexo.setConteudo(bytes);
             anexos.save(anexo);
             return salvo;

@@ -21,6 +21,10 @@ class ServiceRulesTests {
         var vinculos = mock(StartupUsuarioRepository.class);
         var service = new DocumentoService(documentos, categorias, vinculos, mock(TagRepository.class), mock(AnexoPdfRepository.class), mock(HistoricoStatusRepository.class), mock(ComentarioRepository.class), mock(UsuarioRepository.class), mock(DocumentoVersaoRepository.class));
         Documento existente = new Documento();
+        var responsavel = new StartupUsuario();
+        responsavel.setId(new StartupUsuarioId(3L, 4L));
+        existente.setResponsavel(responsavel);
+        when(vinculos.existsById(new StartupUsuarioId(3L, 5L))).thenReturn(true);
         existente.setNome("Original");
         when(documentos.findDocumentoById(1L)).thenReturn(Optional.of(existente));
         when(categorias.findById(2L)).thenReturn(Optional.of(new Categoria()));
@@ -30,7 +34,7 @@ class ServiceRulesTests {
         form.setCategoriaId(2L);
         form.setStartupId(3L);
         form.setResponsavelId(4L);
-        var erro = assertThrows(RegraNegocioException.class, () -> service.atualizar(1L, form));
+        var erro = assertThrows(RegraNegocioException.class, () -> service.atualizar(1L, form, 5L));
         assertTrue(erro.getErros().containsKey("responsavelId"));
         assertEquals("Original", existente.getNome());
         verify(documentos, never()).saveAndFlush(any());
@@ -41,7 +45,7 @@ class ServiceRulesTests {
         var documentos = mock(DocumentoRepository.class);
         var service = new DocumentoService(documentos, mock(CategoriaRepository.class), mock(StartupUsuarioRepository.class), mock(TagRepository.class), mock(AnexoPdfRepository.class), mock(HistoricoStatusRepository.class), mock(ComentarioRepository.class), mock(UsuarioRepository.class), mock(DocumentoVersaoRepository.class));
         when(documentos.findDocumentoById(999L)).thenReturn(Optional.empty());
-        assertNull(service.atualizar(999L, new DocumentoForm()));
+        assertNull(service.atualizar(999L, new DocumentoForm(), 5L));
         verify(documentos, never()).saveAndFlush(any());
     }
 

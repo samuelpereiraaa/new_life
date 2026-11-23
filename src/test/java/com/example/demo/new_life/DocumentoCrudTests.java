@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(properties = "NEWLIFE_ADMIN_EMAIL=admin@teste.local", webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class DocumentoCrudTests {
     @Value("${local.server.port}")
     private int port;
@@ -31,7 +31,9 @@ class DocumentoCrudTests {
     @Autowired private ComentarioRepository comentarios;
     @Autowired private EntityManagerFactory entityManagerFactory;
     @Autowired private JdbcTemplate jdbc;
-    private final HttpClient client = HttpClient.newHttpClient();
+    private final HttpClient client = HttpClient.newBuilder().cookieHandler(new java.net.CookieManager(null, java.net.CookiePolicy.ACCEPT_ALL)).build();
+
+    private String csrf;
 
     @Test
     void crudPersisteRelacionamentosETrataFalhas() throws Exception {
@@ -46,6 +48,11 @@ class DocumentoCrudTests {
                 "documento_tag", "tag", "documento", "startup_usuario", "categoria", "usuario", "startup"}) {
             jdbc.update("DELETE FROM " + tabela);
         }
+        jdbc.update("insert into usuario(nome,email,senha_hash) values('Admin','admin@teste.local',?)",
+                new BCryptPasswordEncoder().encode("Teste12345"));
+        csrf = token(get("/login").body());
+        assertRedirect(post("/login", "email=admin%40teste.local&senha=Teste12345"), "/");
+        csrf = token(get("/").body());
         assertTrue(get("/documentos").body().contains("Nenhum documento encontrado"));
         assertTrue(get("/documentos/novo").body().contains("cadastros auxiliares"));
         assertTrue(get("/cadastros").body().contains("Nenhum vínculo cadastrado"));
@@ -65,11 +72,11 @@ class DocumentoCrudTests {
         assertTrue(emailInvalido.body().contains("Informe um e-mail válido."));
         assertTrue(emailInvalido.body().contains("value=\"Nome preservado\""));
         assertFalse(emailInvalido.body().contains("Segredo123"));
-        assertEquals(0, usuarios.count());
+        assertEquals(1, usuarios.count());
         var senhaLonga = post("/cadastros/usuarios", "nome=Ana&email=ana%40teste.local&senha=" + "%C3%A1".repeat(37));
         assertEquals(200, senhaLonga.statusCode());
         assertTrue(senhaLonga.body().contains("72 bytes"));
-        assertEquals(0, usuarios.count());
+        assertEquals(1, usuarios.count());
         var categoriaInvalida = post("/cadastros/categorias", "nome=" + "x".repeat(81));
         assertEquals(200, categoriaInvalida.statusCode());
         assertTrue(categoriaInvalida.body().contains("O nome deve ter até 80 caracteres."));
@@ -82,14 +89,15 @@ class DocumentoCrudTests {
         assertRedirect(post("/cadastros/usuarios", "nome=Ana&email=ana%40teste.local&senha=SenhaTeste123"), "/cadastros");
         assertRedirect(post("/cadastros/categorias", "nome=Legal"), "/cadastros");
         long startupId = startups.findAll().get(0).getId();
-        long usuarioId = usuarios.findAll().get(0).getId();
+        long usuarioId = usuarios.findByEmailIgnoreCase("ana@teste.local").orElseThrow().getId();
         long categoriaId = categorias.findAll().get(0).getId();
+        jdbc.update("insert into startup_usuario(startup_id, usuario_id) select ?, id from usuario where email='admin@teste.local'", startupId);
         var duplicado = post("/cadastros/usuarios", "nome=Outra+Ana&email=ana%40teste.local&senha=OutroSegredo123");
         assertEquals(200, duplicado.statusCode());
         assertTrue(duplicado.body().contains("E-mail já cadastrado."));
         assertTrue(duplicado.body().contains("value=\"Outra Ana\""));
         assertFalse(duplicado.body().contains("OutroSegredo123"));
-        assertEquals(1, usuarios.count());
+        assertEquals(2, usuarios.count());
         assertTrue(new BCryptPasswordEncoder().matches("SenhaTeste123", usuarios.findById(usuarioId).orElseThrow().getSenhaHash()));
         String campos = "&categoriaId=" + categoriaId + "&startupId=" + startupId
                 + "&responsavelId=" + usuarioId + "&status=Pendente";
@@ -167,8 +175,8 @@ class DocumentoCrudTests {
         assertFlash(bloqueado, "Não é possível excluir");
         assertTrue(documentos.existsById(id));
         comentarios.deleteById(comentario.getId());
-        assertRedirect(post("/documentos/" + id + "/editar", "nome=Contrato+editado" + campos + tagsSelecionadas), "/documentos");
-        assertRedirect(post("/documentos", "nome=Outro+documento" + campos + tagsSelecionadas), "/documentos");
+        assertFlash(post("/documentos/" + id + "/editar", "nome=Contrato+editado" + campos + tagsSelecionadas), "Documento atualizado com sucesso!");
+        assertFlash(post("/documentos", "nome=Outro+documento" + campos + tagsSelecionadas), "Documento cadastrado com sucesso!");
         var comHistorico = post("/documentos/" + id + "/excluir", "");
         assertRedirect(comHistorico, "/documentos");
         assertFlash(comHistorico, "Não é possível excluir");
@@ -194,9 +202,8 @@ class DocumentoCrudTests {
     }
 
     private void assertFlash(HttpResponse<String> response, String mensagem) throws Exception {
-        String cookie = response.headers().firstValue("set-cookie").orElseThrow().split(";", 2)[0];
-        var pagina = client.send(HttpRequest.newBuilder(uri("/documentos"))
-                .header("Cookie", cookie).GET().build(), HttpResponse.BodyHandlers.ofString());
+        assertRedirect(response, "/documentos");
+        var pagina = get("/documentos");
         assertEquals(200, pagina.statusCode());
         assertTrue(pagina.body().contains(mensagem));
     }
@@ -205,6 +212,12 @@ class DocumentoCrudTests {
         assertEquals(302, response.statusCode(), response.body());
         URI destino = URI.create(response.headers().firstValue("location").orElseThrow());
         assertEquals(path, destino.getPath().split(";", 2)[0]);
+    }
+
+    private String token(String html) {
+        var matcher = java.util.regex.Pattern.compile("name=\"_csrf\" value=\"([^\"]+)\"").matcher(html);
+        assertTrue(matcher.find());
+        return matcher.group(1);
     }
 
     private URI uri(String path) { return URI.create("http://localhost:" + port + path); }
@@ -218,6 +231,6 @@ class DocumentoCrudTests {
     private HttpResponse<String> post(String path, String body) throws Exception {
         return client.send(HttpRequest.newBuilder(uri(path))
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());
+                .POST(HttpRequest.BodyPublishers.ofString("_csrf=" + csrf + "&" + body)).build(), HttpResponse.BodyHandlers.ofString());
     }
 }

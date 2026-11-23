@@ -29,10 +29,10 @@
                 <a class="nav-link" th:href="@{/#sobre}">Sobre</a>
             </nav>
 
-            <label class="search-box">
+            <form class="search-box" role="search" method="get" th:action="@{/documentos}">
                 <span aria-hidden="true">⌕</span>
-                <input id="searchInput" type="search" placeholder="Buscar documento..." aria-label="Buscar documento">
-            </label>
+                <input name="termo" type="search" placeholder="Buscar documento..." aria-label="Buscar documento">
+            </form>
         </div>
     </header>
 
@@ -70,6 +70,8 @@
                 </div>
             </section>
         </section>
+        <form class="container" method="post" th:action="@{/logout}">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}"><button class="button secondary" type="submit">Sair</button></form>
     </main>
 
     <footer class="site-footer">

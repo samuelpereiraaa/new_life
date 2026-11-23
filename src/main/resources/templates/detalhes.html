@@ -48,9 +48,11 @@
             </div>
             <section class="table-card" th:if="${documento.nomePdf != null}">
                 <h2>Análise da startup</h2>
+                <p th:text="|PDF atual · ${autorPdf}|"></p>
                 <p>Ao solicitar a análise, o PDF será enviado ao Google Gemini.</p>
                 <form method="post" th:action="@{/documentos/{id}/analise(id=${documento.id})}"
                       onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').textContent='Analisando…'">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}">
                     <button class="button" type="submit">Analisar documento com Gemini</button>
                 </form>
                 <div th:if="${analise}" style="white-space: pre-wrap" th:text="${analise}"></div>
@@ -60,7 +62,7 @@
                 <h2>Histórico de status</h2>
                 <p th:if="${historico.isEmpty()}">Nenhuma mudança registrada.</p>
                 <ul><li th:each="h : ${historico}">
-                    <time th:text="${#temporals.format(h.alteradoEm, 'dd/MM/yyyy HH:mm')}"></time>
+                    <span th:text="${h.alteradoPor?.nome ?: 'Autoria não registrada'}"></span> · <time th:text="${#temporals.format(h.alteradoEm, 'dd/MM/yyyy HH:mm')}"></time>
                     <span th:text="|${h.statusAnterior ?: 'Inicial'} → ${h.statusNovo}|"></span>
                 </li></ul>
             </section>
@@ -74,11 +76,7 @@
                 </article>
                 <p role="alert" th:if="${erroComentario}" th:text="${erroComentario}"></p>
                 <form method="post" th:action="@{/documentos/{id}/comentarios(id=${documento.id})}">
-                    <label for="autor">Autor</label>
-                    <select id="autor" name="autorId" required>
-                        <option value="">Selecione o autor</option>
-                        <option th:each="u : ${usuarios}" th:value="${u.id}" th:text="${u.nome}" th:selected="${u.id == autorId}"></option>
-                    </select>
+                <input type="hidden" name="_csrf" th:value="${session.csrf}">
                     <label for="texto">Comentário</label>
                     <textarea id="texto" name="texto" maxlength="4000" required th:text="${texto}"></textarea>
                     <button class="button" type="submit">Adicionar comentário</button>
@@ -89,6 +87,7 @@
                 <p th:if="${versoes.isEmpty()}">Nenhuma versão anterior registrada.</p>
                 <ul><li th:each="v : ${versoes}">
                     <span th:text="|Versão ${v.numeroVersao} · ${v.nomeArquivo}|"></span>
+                    <span th:text="${v.autor ?: 'Autoria não registrada'}"></span>
                     <a th:if="${v.disponivel}" th:href="@{/documentos/{id}/versoes/{n}/arquivo(id=${documento.id},n=${v.numeroVersao})}">Baixar PDF</a>
                     <span th:unless="${v.disponivel}">Arquivo indisponível</span>
                 </li></ul>
@@ -98,10 +97,13 @@
                 <a class="button" th:if="${documento.nomePdf != null}" th:href="@{/documentos/{id}/arquivo(id=${documento.id})}" th:text="|Baixar PDF · ${documento.nomePdf}|"></a>
                 <form th:action="@{/documentos/{id}/excluir(id=${documento.id})}" method="post"
                       onsubmit="return confirm('Deseja excluir este documento?')">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}">
                     <button class="button danger" type="submit">Excluir</button>
                 </form>
             </div>
         </section>
+        <form class="container" method="post" th:action="@{/logout}">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}"><button class="button secondary" type="submit">Sair</button></form>
     </main>
 
     <footer class="site-footer"><div class="container footer-content"><span>New Life · protótipo Spring Boot</span><span>ORGANIZE · ACOMPANHE · EVOLUA</span></div></footer>

@@ -42,6 +42,7 @@
             <form class="document-form" enctype="multipart/form-data"
                   th:action="${documentoId != null} ? @{/documentos/{id}/editar(id=${documentoId})} : @{/documentos}"
                   th:object="${documentoForm}" method="post">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}">
                 <label for="nome">Nome do documento</label>
                 <input id="nome" type="text" th:field="*{nome}" th:errorclass="campo-erro" maxlength="255" placeholder="Ex.: Contrato com fornecedor" required>
                 <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></p>
@@ -54,7 +55,8 @@
                 <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('categoriaId')}" th:errors="*{categoriaId}"></p>
 
                 <label for="startup">Startup</label>
-                <select id="startup" th:field="*{startupId}" th:errorclass="campo-erro" required>
+                <input th:if="${documentoId != null}" type="hidden" name="startupId" th:value="*{startupId}">
+                <select th:disabled="${documentoId != null}" id="startup" th:field="*{startupId}" th:errorclass="campo-erro" required>
                     <option value="">Selecione uma startup</option>
                     <option th:each="startup : ${startups}" th:value="${startup.id}" th:text="${startup.nome}"></option>
                 </select>
@@ -91,6 +93,8 @@
                 <button class="button" type="submit" th:text="${documentoId != null ? 'Salvar alterações' : 'Salvar documento'}">Salvar documento</button>
             </form>
         </section>
+        <form class="container" method="post" th:action="@{/logout}">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}"><button class="button secondary" type="submit">Sair</button></form>
     </main>
 
     <footer class="site-footer"><div class="container footer-content"><span>New Life · protótipo Spring Boot</span><span>ORGANIZE · ACOMPANHE · EVOLUA</span></div></footer>

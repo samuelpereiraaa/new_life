@@ -14,4 +14,8 @@ public class AnexoPdf {
 
     @Column(nullable = false)
     private byte[] conteudo;
+
+    @ManyToOne
+    @JoinColumn(name = "enviado_por")
+    private Usuario enviadoPor;
 }

@@ -8,12 +8,13 @@ public interface DocumentoVersaoRepository extends JpaRepository<DocumentoVersao
         Integer getNumeroVersao();
         String getNomeArquivo();
         boolean getDisponivel();
+        String getAutor();
     }
 
     @org.springframework.data.jpa.repository.Query("""
-            select v.numeroVersao as numeroVersao, v.nomeArquivo as nomeArquivo,
+            select v.numeroVersao as numeroVersao, v.nomeArquivo as nomeArquivo, u.nome as autor,
                    case when v.conteudo is null then false else true end as disponivel
-            from DocumentoVersao v where v.documento.id = :id order by v.numeroVersao desc
+            from DocumentoVersao v left join v.enviadoPor u where v.documento.id = :id order by v.numeroVersao desc
             """)
     java.util.List<Resumo> listar(Long id);
 

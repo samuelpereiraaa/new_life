@@ -16,6 +16,7 @@
     <p class="flash-message error" role="alert" th:if="${erro}" th:text="${erro}"></p>
     <div class="table-grid">
         <form class="document-form" th:action="@{/cadastros/tags}" th:object="${tagForm}" method="post">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}">
             <h2>Tag</h2>
             <label for="tagNome">Nome</label>
             <input id="tagNome" th:field="*{nome}" th:errorclass="campo-erro" required maxlength="100">
@@ -24,6 +25,7 @@
             <ul><li th:each="tag : ${tags}" th:text="${tag.nome}"></li></ul>
         </form>
         <form id="startups" class="document-form" th:action="@{/cadastros/startups}" th:object="${startupForm}" method="post">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}">
             <h2>Startup</h2>
             <label for="startupNome">Nome</label><input id="startupNome" th:field="*{nome}" th:errorclass="campo-erro" required maxlength="150">
             <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></p>
@@ -32,6 +34,7 @@
             <button class="button" type="submit">Cadastrar startup</button>
         </form>
         <form class="document-form" th:action="@{/cadastros/usuarios}" th:object="${usuarioForm}" method="post">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}">
             <h2>Usuário</h2>
             <label for="usuarioNome">Nome</label><input id="usuarioNome" th:field="*{nome}" th:errorclass="campo-erro" required maxlength="150">
             <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></p>
@@ -42,6 +45,7 @@
             <button class="button" type="submit">Cadastrar usuário</button>
         </form>
         <form class="document-form" th:action="@{/cadastros/categorias}" th:object="${categoriaForm}" method="post">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}">
             <h2>Categoria</h2>
             <label for="categoriaNome">Nome</label><input id="categoriaNome" th:field="*{nome}" th:errorclass="campo-erro" required maxlength="80">
             <p class="mensagem-erro" role="alert" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></p>
@@ -49,6 +53,7 @@
             <ul><li th:each="categoria : ${categorias}" th:text="${categoria.nome}"></li></ul>
         </form>
         <form class="document-form" th:action="@{/cadastros/vinculos}" th:object="${vinculoForm}" method="post">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}">
             <h2>Vincular usuário à startup</h2>
             <label for="startupId">Startup</label>
             <select id="startupId" th:field="*{startupId}" th:errorclass="campo-erro" required>
@@ -75,6 +80,8 @@
             </tbody>
         </table>
     </div>
-</main>
+    <form class="container" method="post" th:action="@{/logout}">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}"><button class="button secondary" type="submit">Sair</button></form>
+    </main>
 </body>
 </html>

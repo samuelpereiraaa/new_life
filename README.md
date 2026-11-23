@@ -35,6 +35,10 @@ A migration foi baseada no DDL já integrado à branch `main`. Usa
 
 ## Primeiro uso
 
+Configure `NEWLIFE_ADMIN_EMAIL` com o e-mail de uma conta existente para administrar os cadastros. Em um banco vazio, configure também `NEWLIFE_ADMIN_PASSWORD` na primeira inicialização para criar essa conta. Remova a senha inicial do ambiente depois. Acesse `/login` com o e-mail e a senha cadastrados.
+
+Apenas o administrador gerencia usuários e vínculos. Para acessar documentos, inclusive como administrador, a conta precisa estar vinculada à startup. Cada documento permanece na startup de origem. Autores de registros antigos sem identificação aparecem como “Autoria não registrada”.
+
 1. Abra `/cadastros` e crie uma startup, um usuário e uma categoria.
 2. Na mesma página, vincule o usuário à startup.
 3. Abra `/documentos/novo` e selecione os cadastros existentes.
@@ -69,7 +73,7 @@ Referências inexistentes e duplicidades também são apresentadas no campo corr
 O CNPJ opcional tem limite de tamanho; ainda não há validação de dígitos verificadores.
 O limite de 72 bytes UTF-8 do BCrypt é verificado além do tamanho em caracteres.
 
-O cadastro aceita um PDF opcional de até 5 MB, salvo no PostgreSQL e disponível para download nos detalhes. Na edição, enviar outro PDF arquiva o anterior para download. Os detalhes exibem as mudanças de status e permitem registrar comentários com seleção do autor.
+O cadastro aceita um PDF opcional de até 5 MB, salvo no PostgreSQL e disponível para download nos detalhes. Na edição, enviar outro PDF arquiva o anterior para download. Os detalhes exibem as mudanças de status e permitem registrar comentários com autoria atribuída à conta conectada.
 
 ## Testes
 

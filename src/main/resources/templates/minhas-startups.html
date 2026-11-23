@@ -1,0 +1,8 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Minhas startups | New Life</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body><main class="container documents-page" id="startups"><h1>Minhas startups</h1>
+<p th:if="${startups.isEmpty()}">Peça ao administrador para vincular sua conta a uma startup.</p>
+<ul><li th:each="startup : ${startups}" th:text="${startup.nome}"></li></ul>
+<a class="button secondary" th:href="@{/}">Início</a>    <form class="container" method="post" th:action="@{/logout}">
+                <input type="hidden" name="_csrf" th:value="${session.csrf}"><button class="button secondary" type="submit">Sair</button></form>
+    </main></body></html>

@@ -22,6 +22,8 @@ public class CadastrosService {
     private final TagRepository tagRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+    public List<Startup> startupsDoUsuario(Long ator) { return vinculoRepository.startupsDoUsuario(ator); }
+    public List<Usuario> colegas(Long ator) { return vinculoRepository.colegas(ator); }
     public List<Startup> listarStartups() { return startupRepository.findAll(); }
     public List<Tag> listarTags() { return tagRepository.findAll(org.springframework.data.domain.Sort.by("nome")); }
 

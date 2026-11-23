@@ -24,11 +24,17 @@ public class PageController {
     private final DocumentoService documentoService;
     private final CadastrosService cadastrosService;
 
+    private final jakarta.servlet.http.HttpServletRequest request;
+
+    private Long ator() {
+        return (Long) request.getSession(false).getAttribute("usuarioId");
+    }
+
     @GetMapping({"/", "/inicio"})
     public String inicio(Model model) {
-        model.addAttribute("totalDocumentos", documentoService.contarDocumentos());
-        model.addAttribute("totalStartups", cadastrosService.contarStartups());
-        model.addAttribute("totalEmAnalise", documentoService.contarEmAnalise());
+        model.addAttribute("totalDocumentos", documentoService.contarDocumentos(ator(), ""));
+        model.addAttribute("totalStartups", cadastrosService.startupsDoUsuario(ator()).size());
+        model.addAttribute("totalEmAnalise", documentoService.contarDocumentos(ator(), "Em análise"));
         return "index";
     }
 
@@ -36,7 +42,7 @@ public class PageController {
     public String documentos(@RequestParam(name = "termo", defaultValue = "") String busca,
             @RequestParam(defaultValue = "") String status, Model model) {
         model.addAttribute("status", status);
-        model.addAttribute("documentos", documentoService.listar(busca, status));
+        model.addAttribute("documentos", documentoService.listar(busca, status, ator()));
         model.addAttribute("categorias", cadastrosService.listarCategorias());
         model.addAttribute("filtro", new FiltroDocumento(busca));
         return "documentos";
@@ -57,7 +63,7 @@ public class PageController {
 
     @GetMapping("/documentos/{id}")
     public String detalhes(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        Documento documento = documentoService.buscarPorId(id);
+        Documento documento = documentoService.buscarPorId(id, ator());
         if (documento == null) return naoEncontrado(redirectAttributes);
         prepararDetalhes(documento, model);
         return "detalhes";
@@ -65,7 +71,7 @@ public class PageController {
 
     @PostMapping("/documentos/{id}/analise")
     public String analisar(@PathVariable Long id, Model model, RedirectAttributes redirect) {
-        Documento documento = documentoService.buscarPorId(id);
+        Documento documento = documentoService.buscarPorId(id, ator());
         if (documento == null) return naoEncontrado(redirect);
         prepararDetalhes(documento, model);
         try {
@@ -80,7 +86,7 @@ public class PageController {
 
     @GetMapping("/documentos/{id}/arquivo")
     public ResponseEntity<byte[]> baixar(@PathVariable Long id) {
-        Documento documento = documentoService.buscarPorId(id);
+        Documento documento = documentoService.buscarPorId(id, ator());
         if (documento == null || documento.getNomePdf() == null) {
             return ResponseEntity.notFound().build();
         }
@@ -93,7 +99,7 @@ public class PageController {
 
     @GetMapping("/documentos/{id}/editar")
     public String editar(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        Documento documento = documentoService.buscarPorId(id);
+        Documento documento = documentoService.buscarPorId(id, ator());
         if (documento == null) return naoEncontrado(redirectAttributes);
         DocumentoForm formulario = new DocumentoForm();
         formulario.setNome(documento.getNome());
@@ -111,7 +117,7 @@ public class PageController {
     @PostMapping("/documentos/{id}/editar")
     public String atualizar(@PathVariable Long id, @Valid @ModelAttribute("documentoForm") DocumentoForm formulario,
             BindingResult result, Model model, RedirectAttributes redirectAttributes) {
-        Documento documento = documentoService.buscarPorId(id);
+        Documento documento = documentoService.buscarPorId(id, ator());
         if (documento == null) return naoEncontrado(redirectAttributes);
         model.addAttribute("documentoId", id);
         return salvar(id, formulario, result, model, redirectAttributes);
@@ -120,7 +126,7 @@ public class PageController {
     @PostMapping("/documentos/{id}/excluir")
     public String excluir(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            if (!documentoService.excluir(id)) return naoEncontrado(redirectAttributes);
+            if (!documentoService.excluir(id, ator())) return naoEncontrado(redirectAttributes);
             redirectAttributes.addFlashAttribute("mensagem", "Documento excluído com sucesso!");
         } catch (RegraNegocioException ex) {
             redirectAttributes.addFlashAttribute("erro", ex.getMessage());
@@ -135,7 +141,7 @@ public class PageController {
             return "cadastro";
         }
         try {
-            Documento salvo = id == null ? documentoService.cadastrar(form) : documentoService.atualizar(id, form);
+            Documento salvo = id == null ? documentoService.cadastrar(form, ator()) : documentoService.atualizar(id, form, ator());
             if (salvo == null) return naoEncontrado(redirectAttributes);
         } catch (RegraNegocioException ex) {
             ex.getErros().forEach((campo, mensagem) -> {
@@ -153,27 +159,27 @@ public class PageController {
     private void prepararDetalhes(Documento documento, Model model) {
         Long id = documento.getId();
         model.addAttribute("documento", documento);
+        model.addAttribute("autorPdf", documentoService.buscarAutorPdf(id));
         model.addAttribute("comentarios", documentoService.comentarios(id));
-        model.addAttribute("usuarios", cadastrosService.listarUsuarios());
         model.addAttribute("historico", documentoService.historico(id));
         model.addAttribute("versoes", documentoService.versoes(id));
     }
 
     @PostMapping("/documentos/{id}/comentarios")
-    public String comentar(@PathVariable Long id, @RequestParam(required = false) Long autorId,
+    public String comentar(@PathVariable Long id,
             @RequestParam(defaultValue = "") String texto, RedirectAttributes redirect) {
         try {
-            if (!documentoService.comentar(id, autorId, texto)) return naoEncontrado(redirect);
+            if (!documentoService.comentar(id, ator(), texto)) return naoEncontrado(redirect);
         } catch (RegraNegocioException ex) {
             redirect.addFlashAttribute("erroComentario", ex.getMessage());
             redirect.addFlashAttribute("texto", texto);
-            redirect.addFlashAttribute("autorId", autorId);
         }
         return "redirect:/documentos/" + id + "#comentarios";
     }
 
     @GetMapping("/documentos/{id}/versoes/{numero}/arquivo")
     public ResponseEntity<byte[]> baixarVersao(@PathVariable Long id, @PathVariable Integer numero) {
+        if (documentoService.buscarPorId(id, ator()) == null) return ResponseEntity.notFound().build();
         return documentoService.buscarVersao(id, numero).filter(v -> v.getConteudo() != null)
                 .map(v -> ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF)
                         .header("Content-Disposition", ContentDisposition.attachment()
@@ -184,8 +190,8 @@ public class PageController {
     private void prepararFormulario(Model model) {
         model.addAttribute("tags", cadastrosService.listarTags());
         model.addAttribute("categorias", cadastrosService.listarCategorias());
-        model.addAttribute("startups", cadastrosService.listarStartups());
-        model.addAttribute("usuarios", cadastrosService.listarUsuarios());
+        model.addAttribute("startups", cadastrosService.startupsDoUsuario(ator()));
+        model.addAttribute("usuarios", cadastrosService.colegas(ator()));
     }
 
     private String naoEncontrado(RedirectAttributes redirectAttributes) {

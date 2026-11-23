@@ -7,10 +7,12 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 
 public interface DocumentoRepository extends JpaRepository<Documento, Long> {
-    long countByStatus(String status);
+    @org.springframework.data.jpa.repository.Query("select count(d) from Documento d where d.responsavel.id.startupId in (select v.id.startupId from StartupUsuario v where v.id.usuarioId = :ator) and (:status = '' or d.status = :status)")
+    long contarVisiveis(Long ator, String status);
 
     @EntityGraph(attributePaths = {"tags", "categoria", "responsavel", "responsavel.startup", "responsavel.usuario"})
-    List<Documento> findByStatus(String status);
+    @org.springframework.data.jpa.repository.Query("select d from Documento d where d.responsavel.id.startupId in (select v.id.startupId from StartupUsuario v where v.id.usuarioId = :ator) and (:status = '' or d.status = :status)")
+    List<Documento> listarVisiveis(Long ator, String status);
 
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     Optional<Documento> findDocumentoById(Long id);

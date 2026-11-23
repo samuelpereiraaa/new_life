@@ -16,6 +16,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class CadastrosController {
     private final CadastrosService cadastrosService;
 
+    private final jakarta.servlet.http.HttpServletRequest request;
+
     @ModelAttribute("tagForm")
     public TagForm tagForm() { return new TagForm(); }
 
@@ -43,6 +45,10 @@ public class CadastrosController {
 
     @GetMapping
     public String listar(Model model) {
+        if (!Boolean.TRUE.equals(request.getAttribute("admin"))) {
+            model.addAttribute("startups", cadastrosService.startupsDoUsuario((Long) request.getSession().getAttribute("usuarioId")));
+            return "minhas-startups";
+        }
         model.addAttribute("tags", cadastrosService.listarTags());
         model.addAttribute("startups", cadastrosService.listarStartups());
         model.addAttribute("usuarios", cadastrosService.listarUsuarios());
