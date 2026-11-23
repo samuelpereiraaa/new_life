@@ -44,7 +44,7 @@ class DocumentoCrudTests {
                     "A limpeza so pode executar no banco isolado de testes.");
         }
         // Limpa apenas o banco de testes selecionado pelo perfil test.
-        for (String tabela : new String[]{"comentario", "documento_versao", "historico_status",
+        for (String tabela : new String[]{"analise_pdf", "comentario", "documento_versao", "historico_status",
                 "documento_tag", "tag", "documento", "startup_usuario", "categoria", "usuario", "startup"}) {
             jdbc.update("DELETE FROM " + tabela);
         }

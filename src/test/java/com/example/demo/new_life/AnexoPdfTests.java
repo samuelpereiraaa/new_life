@@ -18,6 +18,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AnexoPdfTests {
     @Autowired WebApplicationContext contexto;
     @Autowired JdbcTemplate jdbc;
+    @jakarta.persistence.PersistenceContext jakarta.persistence.EntityManager entityManager;
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    com.example.demo.new_life.service.GeminiService gemini;
 
     @Test
     void cadastraPdfEBaixaMesmoConteudo() throws Exception {
@@ -47,7 +50,7 @@ class AnexoPdfTests {
         mvc.perform(get("/documentos/{id}/arquivo", id)).andExpect(status().isOk())
                 .andExpect(content().contentType("application/pdf")).andExpect(content().bytes(bytes));
         mvc.perform(get("/")).andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("/cadastros#startups")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/startups")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<strong>0</strong><span>Documentos em análise")));
         mvc.perform(get("/documentos").param("status", "Em análise")).andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Teste PDF"))));
@@ -56,6 +59,18 @@ class AnexoPdfTests {
         var colega = new org.springframework.mock.web.MockHttpSession();
         colega.setAttribute("usuarioId",71003L);
         publico.perform(get("/").session(colega)).andExpect(status().isOk());
+        jdbc.update("insert into startup(id,nome) values(71004,'Segunda startup')");
+        jdbc.update("insert into startup_usuario values(71004,71001)");
+        jdbc.update("insert into documento(startup_id,categoria_id,responsavel_id,nome) values(71004,71001,71001,'Segundo documento')");
+        mvc.perform(get("/startups")).andExpect(content().string(org.hamcrest.Matchers.containsString("/documentos?startupId=71004")));
+        mvc.perform(get("/documentos").param("startupId","71004").param("status","Pendente").param("termo","documento"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Segundo documento")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Teste PDF"))));
+        publico.perform(get("/documentos").session(colega).param("startupId","71004")).andExpect(status().isForbidden());
+        entityManager.flush();
+        org.mockito.Mockito.when(gemini.analisar(org.mockito.ArgumentMatchers.any(byte[].class))).thenReturn("Parecer da primeira versão");
+        mvc.perform(post("/documentos/{id}/analise", id)).andExpect(redirectedUrl("/documentos/" + id + "#analises"))
+                .andExpect(flash().attributeCount(0));
         var novo = new MockMultipartFile("arquivo", "novo.pdf", "application/pdf", "%PDF-novo".getBytes());
         publico.perform(multipart("/documentos/{id}/editar", id).file(novo).session(colega)
                 .param("_csrf",(String) colega.getAttribute("csrf")).param("nome", "Teste PDF")
@@ -69,6 +84,8 @@ class AnexoPdfTests {
         mvc.perform(post("/documentos/{id}/comentarios", id).param("autorId", "99999")
                 .param("texto", "Revisado")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/documentos/{id}", id)).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Parecer da primeira versão")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("teste.pdf · Versão 1")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Revisado")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Pendente → Em análise")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("teste.pdf")));

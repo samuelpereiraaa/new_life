@@ -46,7 +46,7 @@
                 <p th:if="${#sets.isEmpty(documento.tags)}">Nenhuma tag vinculada.</p>
                 <ul><li th:each="tag : ${documento.tags}" th:text="${tag.nome}"></li></ul>
             </div>
-            <section class="table-card" th:if="${documento.nomePdf != null}">
+            <section id="analises" class="table-card" th:if="${documento.nomePdf != null}">
                 <h2>Análise da startup</h2>
                 <p th:text="|PDF atual · ${autorPdf}|"></p>
                 <p>Ao solicitar a análise, o PDF será enviado ao Google Gemini.</p>
@@ -55,7 +55,10 @@
                 <input type="hidden" name="_csrf" th:value="${session.csrf}">
                     <button class="button" type="submit">Analisar documento com Gemini</button>
                 </form>
-                <div th:if="${analise}" style="white-space: pre-wrap" th:text="${analise}"></div>
+                <details th:each="a : ${analises}">
+                    <summary th:text="|${#temporals.format(a.data, 'dd/MM/yyyy HH:mm')} · ${a.nome} · Versão ${a.versao}|"></summary>
+                    <p style="white-space: pre-wrap" th:text="${a.resultado}"></p>
+                </details>
             </section>
             <p role="alert" th:if="${erroAnalise}" th:text="${erroAnalise}"></p>
             <section class="table-card">

@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class PageController {
 
-    private final GeminiService geminiService;
+    private final AnaliseDocumentoService analises;
     private final DocumentoService documentoService;
     private final CadastrosService cadastrosService;
 
@@ -38,11 +38,19 @@ public class PageController {
         return "index";
     }
 
+    @GetMapping("/startups")
+    public String minhasStartups(Model model) {
+        model.addAttribute("startups", cadastrosService.startupsDoUsuario(ator()));
+        return "minhas-startups";
+    }
+
     @GetMapping("/documentos")
     public String documentos(@RequestParam(name = "termo", defaultValue = "") String busca,
-            @RequestParam(defaultValue = "") String status, Model model) {
+            @RequestParam(defaultValue = "") String status, @RequestParam(required = false) Long startupId, Model model) {
         model.addAttribute("status", status);
-        model.addAttribute("documentos", documentoService.listar(busca, status, ator()));
+        model.addAttribute("documentos", documentoService.listar(busca, status, ator(), startupId));
+        model.addAttribute("startupId", startupId);
+        model.addAttribute("startups", cadastrosService.startupsDoUsuario(ator()));
         model.addAttribute("categorias", cadastrosService.listarCategorias());
         model.addAttribute("filtro", new FiltroDocumento(busca));
         return "documentos";
@@ -70,18 +78,15 @@ public class PageController {
     }
 
     @PostMapping("/documentos/{id}/analise")
-    public String analisar(@PathVariable Long id, Model model, RedirectAttributes redirect) {
+    public String analisar(@PathVariable Long id, RedirectAttributes redirect) {
         Documento documento = documentoService.buscarPorId(id, ator());
         if (documento == null) return naoEncontrado(redirect);
-        prepararDetalhes(documento, model);
         try {
-            var anexo = documentoService.buscarAnexo(id).orElseThrow(() ->
-                    new RegraNegocioException("", "Anexe um PDF para solicitar a análise."));
-            model.addAttribute("analise", geminiService.analisar(anexo.getConteudo()));
+            analises.analisar(id, ator());
         } catch (RegraNegocioException ex) {
-            model.addAttribute("erroAnalise", ex.getMessage());
+            redirect.addFlashAttribute("erroAnalise", ex.getMessage());
         }
-        return "detalhes";
+        return "redirect:/documentos/" + id + "#analises";
     }
 
     @GetMapping("/documentos/{id}/arquivo")
@@ -159,6 +164,7 @@ public class PageController {
     private void prepararDetalhes(Documento documento, Model model) {
         Long id = documento.getId();
         model.addAttribute("documento", documento);
+        model.addAttribute("analises", analises.historico(id, ator()));
         model.addAttribute("autorPdf", documentoService.buscarAutorPdf(id));
         model.addAttribute("comentarios", documentoService.comentarios(id));
         model.addAttribute("historico", documentoService.historico(id));

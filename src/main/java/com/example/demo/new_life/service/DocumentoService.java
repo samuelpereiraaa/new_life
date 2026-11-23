@@ -75,9 +75,10 @@ public class DocumentoService {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN);
     }
 
-    public List<Documento> listar(String busca, String status, Long ator) {
+    public List<Documento> listar(String busca, String status, Long ator, Long startupId) {
         String termo = busca == null ? "" : busca.toLowerCase(Locale.ROOT).trim();
-        var documentos = documentoRepository.listarVisiveis(ator, status);
+        if (startupId != null) exigirVinculo(startupId, ator);
+        var documentos = documentoRepository.listarVisiveis(ator, status, startupId);
         return documentos.stream()
                 .filter(d -> d.getNome().toLowerCase(Locale.ROOT).contains(termo)
                         || d.getCategoria().getNome().toLowerCase(Locale.ROOT).contains(termo)
@@ -115,7 +116,7 @@ public class DocumentoService {
             documentoRepository.delete(documento);
             documentoRepository.flush();
         } catch (DataIntegrityViolationException ex) {
-            throw new RegraNegocioException("", "Não é possível excluir um documento com versões, comentários ou histórico vinculados.");
+            throw new RegraNegocioException("", "Não é possível excluir um documento com versões, comentários, análises ou histórico vinculados.");
         }
         return true;
     }

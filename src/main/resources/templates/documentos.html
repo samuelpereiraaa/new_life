@@ -24,7 +24,7 @@
             <nav class="main-nav" id="mainNav" aria-label="Navegação principal">
                 <a class="nav-link" th:href="@{/}">Início</a>
                 <a class="nav-link active" th:href="@{/documentos}">Documentos</a>
-                <a class="nav-link" th:href="@{/cadastros#startups}">Startups</a>
+                <a class="nav-link" th:href="@{/startups}">Startups</a>
                 <a class="nav-link" th:href="@{/documentos(status='Em análise')}">Análises</a>
                 <a class="nav-link" th:href="@{/#sobre}">Sobre</a>
             </nav>
@@ -58,8 +58,13 @@
                 <form class="document-filter" th:action="@{/documentos}" th:object="${filtro}" method="get">
                     <input th:if="${!#strings.isEmpty(status)}" type="hidden" name="status" th:value="${status}">
                     <p th:if="${!#strings.isEmpty(status)}">
-                        <span th:text="|Status: ${status}|"></span> · <a th:href="@{/documentos(termo=${filtro.termo})}">Limpar status</a>
+                        <span th:text="|Status: ${status}|"></span> · <a th:href="@{/documentos(termo=${filtro.termo},startupId=${startupId})}">Limpar status</a>
                     </p>
+                    <label for="startupId">Startup</label>
+                    <select id="startupId" name="startupId">
+                        <option value="">Todas as minhas startups</option>
+                        <option th:each="startup : ${startups}" th:value="${startup.id}" th:text="${startup.nome}" th:selected="${startup.id == startupId}"></option>
+                    </select>
                     <label for="termo">Filtrar por nome, categoria ou responsável</label>
                     <div>
                         <input id="termo" type="search" th:field="*{termo}" placeholder="Ex.: financeiro ou Marina">
@@ -76,11 +81,12 @@
                     <h2>Documentos cadastrados</h2>
                     <p class="result-count"><strong th:text="${#lists.size(documentos)}">9</strong> resultado(s) encontrado(s)</p>
                     <table>
-                        <thead><tr><th>ID</th><th>Documento</th><th>Categoria</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Documento</th><th>Startup</th><th>Categoria</th><th>Responsável</th><th>Status</th><th>Ações</th></tr></thead>
                         <tbody>
                             <tr th:each="documento : ${documentos}">
                                 <td th:text="${documento.id}">1</td>
                                 <td><a class="table-link" th:href="@{/documentos/{id}(id=${documento.id})}" th:text="${documento.nome}">Fluxo de caixa 2025</a></td>
+                                <td th:text="${documento.startup.nome}"></td>
                                 <td th:text="${documento.categoria.nome}">Financeiro</td>
                                 <td th:text="${documento.responsavel.usuario.nome}">Marina</td>
                                 <td><span class="status" th:classappend="${documento.statusClass}" th:text="${documento.status}">Aprovado</span></td>
@@ -95,7 +101,7 @@
                                     </div>
                                 </td>
                             </tr>
-                            <tr th:if="${#lists.isEmpty(documentos)}"><td colspan="6">Nenhum documento encontrado.</td></tr>
+                            <tr th:if="${#lists.isEmpty(documentos)}"><td colspan="7">Nenhum documento encontrado.</td></tr>
                         </tbody>
                     </table>
                 </div>
