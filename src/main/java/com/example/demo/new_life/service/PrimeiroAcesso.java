@@ -28,7 +28,7 @@ public class PrimeiroAcesso implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (email.isEmpty() || senha.isEmpty() || usuarios.count() != 0) return;
+        if (email.isEmpty() || senha.isEmpty() || usuarios.findByEmailIgnoreCase(email).isPresent()) return;
         var form = new UsuarioForm();
         form.setNome("Administrador");
         form.setEmail(email);

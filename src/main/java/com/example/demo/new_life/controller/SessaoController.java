@@ -15,6 +15,36 @@ public class SessaoController {
     private final UsuarioRepository usuarios;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+    private final com.example.demo.new_life.service.CadastrosService cadastros;
+
+    @org.springframework.beans.factory.annotation.Value("${NEWLIFE_ADMIN_EMAIL:}")
+    private String adminEmail;
+
+    @GetMapping("/criar-conta")
+    public String cadastro(@ModelAttribute("conta") com.example.demo.new_life.model.UsuarioForm conta) {
+        return "criar-conta";
+    }
+
+    @PostMapping("/criar-conta")
+    public String cadastrar(@jakarta.validation.Valid @ModelAttribute("conta") com.example.demo.new_life.model.UsuarioForm conta,
+            org.springframework.validation.BindingResult erros,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes flash) {
+        if (!erros.hasFieldErrors("email") && adminEmail.strip().equalsIgnoreCase(conta.getEmail().strip())) {
+            erros.rejectValue("email", "reservado", "Este e-mail está reservado para a administração.");
+        }
+        if (!erros.hasErrors()) {
+            try {
+                cadastros.cadastrarUsuario(conta);
+                flash.addFlashAttribute("mensagem", "Conta criada. Entre com seu e-mail e senha.");
+                return "redirect:/login";
+            } catch (com.example.demo.new_life.service.RegraNegocioException ex) {
+                ex.getErros().forEach((campo, mensagem) -> erros.rejectValue(campo, "cadastro", mensagem));
+            }
+        }
+        conta.setSenha(null);
+        return "criar-conta";
+    }
+
     @GetMapping("/login")
     public String login() { return "login"; }
 

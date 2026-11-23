@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Criar conta | New Life</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body><main class="container documents-page">
+<h1>Criar conta</h1>
+<form class="document-form" method="post" th:action="@{/criar-conta}" th:object="${conta}">
+    <input type="hidden" name="_csrf" th:value="${session.csrf}">
+    <label for="nome">Nome</label><input th:field="*{nome}" autocomplete="name" maxlength="150" required>
+    <p role="alert" th:errors="*{nome}"></p>
+    <label for="email">E-mail</label><input th:field="*{email}" type="email" autocomplete="email" maxlength="254" required>
+    <p role="alert" th:errors="*{email}"></p>
+    <label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="new-password" maxlength="72" required>
+    <p role="alert" th:errors="*{senha}"></p>
+    <button class="button" type="submit">Criar conta</button>
+    <a th:href="@{/login}">Já tenho conta. Entrar</a>
+</form></main></body></html>

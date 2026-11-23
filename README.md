@@ -35,7 +35,9 @@ A migration foi baseada no DDL já integrado à branch `main`. Usa
 
 ## Primeiro uso
 
-Configure `NEWLIFE_ADMIN_EMAIL` com o e-mail de uma conta existente para administrar os cadastros. Em um banco vazio, configure também `NEWLIFE_ADMIN_PASSWORD` na primeira inicialização para criar essa conta. Remova a senha inicial do ambiente depois. Acesse `/login` com o e-mail e a senha cadastrados.
+Em `/login`, clique em **Criar conta** para cadastrar nome, e-mail e senha. Uma conta nova pode entrar imediatamente e aguarda o vínculo do administrador para acessar documentos de uma startup.
+
+Configure `NEWLIFE_ADMIN_EMAIL` com o e-mail de uma conta administrativa sob seu controle. Se essa conta ainda não existir, configure também `NEWLIFE_ADMIN_PASSWORD` ao iniciar para criá-la e remova a senha inicial do ambiente depois. O cadastro público reserva o endereço administrativo configurado.
 
 Apenas o administrador gerencia usuários e vínculos. Para acessar documentos, inclusive como administrador, a conta precisa estar vinculada à startup. Cada documento permanece na startup de origem. Autores de registros antigos sem identificação aparecem como “Autoria não registrada”.
 

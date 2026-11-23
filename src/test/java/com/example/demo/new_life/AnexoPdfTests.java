@@ -23,6 +23,24 @@ class AnexoPdfTests {
     com.example.demo.new_life.service.GeminiService gemini;
 
     @Test
+    void criaContaEEntraSemVinculo() throws Exception {
+        var mvc = MockMvcBuilders.webAppContextSetup(contexto).build();
+        var sessao = (org.springframework.mock.web.MockHttpSession) mvc.perform(get("/login"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/criar-conta")))
+                .andReturn().getRequest().getSession();
+        String csrf = (String) sessao.getAttribute("csrf");
+        mvc.perform(get("/criar-conta").session(sessao)).andExpect(status().isOk());
+        mvc.perform(post("/criar-conta").session(sessao).param("_csrf", csrf).param("nome", "Nova conta")
+                .param("email", "nova@example.org").param("senha", "MinhaSenha123"))
+                .andExpect(redirectedUrl("/login"));
+        var autenticada = (org.springframework.mock.web.MockHttpSession) mvc.perform(post("/login").session(sessao)
+                .param("_csrf", csrf).param("email", "nova@example.org").param("senha", "MinhaSenha123"))
+                .andExpect(redirectedUrl("/")).andReturn().getRequest().getSession();
+        mvc.perform(get("/startups").session(autenticada)).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Peça ao administrador")));
+    }
+
+    @Test
     void cadastraPdfEBaixaMesmoConteudo() throws Exception {
         jdbc.update("insert into startup(id,nome) values(71001,'Startup PDF')");
         jdbc.update("insert into categoria(id,nome) values(71001,'Categoria PDF')");

@@ -28,7 +28,7 @@ public class ControleSessao implements WebMvcConfigurer, HandlerInterceptor {
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) throws Exception {
         if (!(handler instanceof HandlerMethod metodo)
                 || !metodo.getBeanType().getPackageName().equals(ControleSessao.class.getPackageName())) return true;
-        boolean login = metodo.getBeanType() == SessaoController.class && !metodo.getMethod().getName().equals("sair");
+        boolean login = metodo.getBeanType() == SessaoController.class && java.util.Set.of("login", "entrar", "cadastro", "cadastrar").contains(metodo.getMethod().getName());
         var sessao = req.getSession(login);
         Long id = sessao == null ? null : (Long) sessao.getAttribute("usuarioId");
         var usuario = java.util.Optional.ofNullable(id).flatMap(usuarios::findById);
