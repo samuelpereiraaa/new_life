@@ -169,10 +169,16 @@ class DocumentoCrudTests {
         comentarios.deleteById(comentario.getId());
         assertRedirect(post("/documentos/" + id + "/editar", "nome=Contrato+editado" + campos + tagsSelecionadas), "/documentos");
         assertRedirect(post("/documentos", "nome=Outro+documento" + campos + tagsSelecionadas), "/documentos");
-        var excluido = post("/documentos/" + id + "/excluir", "");
+        var comHistorico = post("/documentos/" + id + "/excluir", "");
+        assertRedirect(comHistorico, "/documentos");
+        assertFlash(comHistorico, "Não é possível excluir");
+        assertTrue(documentos.existsById(id));
+
+        Long outroId = jdbc.queryForObject("select id from documento where nome = ?", Long.class, "Outro documento");
+        var excluido = post("/documentos/" + outroId + "/excluir", "");
         assertRedirect(excluido, "/documentos");
         assertFlash(excluido, "Documento excluído com sucesso!");
-        assertFalse(documentos.existsById(id));
+        assertFalse(documentos.existsById(outroId));
         assertEquals(2, tags.count());
         assertEquals(2, documentos.findAll().get(0).getTags().size());
         for (String rota : new String[]{"/documentos/999999", "/documentos/999999/editar"}) {

@@ -25,13 +25,18 @@ public class PageController {
     private final CadastrosService cadastrosService;
 
     @GetMapping({"/", "/inicio"})
-    public String inicio() {
+    public String inicio(Model model) {
+        model.addAttribute("totalDocumentos", documentoService.contarDocumentos());
+        model.addAttribute("totalStartups", cadastrosService.contarStartups());
+        model.addAttribute("totalEmAnalise", documentoService.contarEmAnalise());
         return "index";
     }
 
     @GetMapping("/documentos")
-    public String documentos(@RequestParam(name = "termo", defaultValue = "") String busca, Model model) {
-        model.addAttribute("documentos", documentoService.listar(busca));
+    public String documentos(@RequestParam(name = "termo", defaultValue = "") String busca,
+            @RequestParam(defaultValue = "") String status, Model model) {
+        model.addAttribute("status", status);
+        model.addAttribute("documentos", documentoService.listar(busca, status));
         model.addAttribute("categorias", cadastrosService.listarCategorias());
         model.addAttribute("filtro", new FiltroDocumento(busca));
         return "documentos";

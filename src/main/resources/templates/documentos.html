@@ -24,8 +24,8 @@
             <nav class="main-nav" id="mainNav" aria-label="Navegação principal">
                 <a class="nav-link" th:href="@{/}">Início</a>
                 <a class="nav-link active" th:href="@{/documentos}">Documentos</a>
-                <a class="nav-link" th:href="@{/#startups}">Startups</a>
-                <a class="nav-link" th:href="@{/#analises}">Análises</a>
+                <a class="nav-link" th:href="@{/cadastros#startups}">Startups</a>
+                <a class="nav-link" th:href="@{/documentos(status='Em análise')}">Análises</a>
                 <a class="nav-link" th:href="@{/#sobre}">Sobre</a>
             </nav>
 
@@ -56,6 +56,10 @@
                 <p class="flash-message error" role="alert" th:if="${erro}" th:text="${erro}">Documento não encontrado.</p>
 
                 <form class="document-filter" th:action="@{/documentos}" th:object="${filtro}" method="get">
+                    <input th:if="${!#strings.isEmpty(status)}" type="hidden" name="status" th:value="${status}">
+                    <p th:if="${!#strings.isEmpty(status)}">
+                        <span th:text="|Status: ${status}|"></span> · <a th:href="@{/documentos(termo=${filtro.termo})}">Limpar status</a>
+                    </p>
                     <label for="termo">Filtrar por nome, categoria ou responsável</label>
                     <div>
                         <input id="termo" type="search" th:field="*{termo}" placeholder="Ex.: financeiro ou Marina">

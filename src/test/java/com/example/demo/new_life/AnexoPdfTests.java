@@ -35,16 +35,25 @@ class AnexoPdfTests {
         Long id = jdbc.queryForObject("select id from documento where nome_pdf='teste.pdf'", Long.class);
         mvc.perform(get("/documentos/{id}/arquivo", id)).andExpect(status().isOk())
                 .andExpect(content().contentType("application/pdf")).andExpect(content().bytes(bytes));
+        mvc.perform(get("/")).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/cadastros#startups")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<strong>0</strong><span>Documentos em análise")));
+        mvc.perform(get("/documentos").param("status", "Em análise")).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Teste PDF"))));
         var novo = new MockMultipartFile("arquivo", "novo.pdf", "application/pdf", "%PDF-novo".getBytes());
         mvc.perform(multipart("/documentos/{id}/editar", id).file(novo).param("nome", "Teste PDF")
                 .param("categoriaId", "71001").param("startupId", "71001")
-                .param("responsavelId", "71001").param("status", "Aprovado"))
+                .param("responsavelId", "71001").param("status", "Em análise"))
                 .andExpect(redirectedUrl("/documentos"));
+        mvc.perform(get("/inicio")).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<strong>1</strong><span>Documentos em análise")));
+        mvc.perform(get("/documentos").param("status", "Em análise").param("termo", "Teste"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Teste PDF")));
         mvc.perform(post("/documentos/{id}/comentarios", id).param("autorId", "71001")
                 .param("texto", "Revisado")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/documentos/{id}", id)).andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Revisado")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Pendente → Aprovado")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Pendente → Em análise")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("teste.pdf")));
         mvc.perform(get("/documentos/{id}/versoes/1/arquivo", id)).andExpect(status().isOk())
                 .andExpect(content().bytes(bytes));

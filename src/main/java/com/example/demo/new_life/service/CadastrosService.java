@@ -34,6 +34,8 @@ public class CadastrosService {
             throw new RegraNegocioException("nome", "Tag já cadastrada.");
         }
     }
+    public long contarStartups() { return startupRepository.count(); }
+
     public List<Usuario> listarUsuarios() { return usuarioRepository.findAll(); }
     public List<Categoria> listarCategorias() { return categoriaRepository.findAll(); }
     public List<StartupUsuario> listarVinculos() { return vinculoRepository.findAll(); }

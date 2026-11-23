@@ -7,6 +7,11 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 
 public interface DocumentoRepository extends JpaRepository<Documento, Long> {
+    long countByStatus(String status);
+
+    @EntityGraph(attributePaths = {"tags", "categoria", "responsavel", "responsavel.startup", "responsavel.usuario"})
+    List<Documento> findByStatus(String status);
+
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     Optional<Documento> findDocumentoById(Long id);
 

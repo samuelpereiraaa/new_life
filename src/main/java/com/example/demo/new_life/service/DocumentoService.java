@@ -63,9 +63,18 @@ public class DocumentoService {
         return anexos.findById(id);
     }
 
-    public List<Documento> listar(String busca) {
+    public long contarDocumentos() {
+        return documentoRepository.count();
+    }
+
+    public long contarEmAnalise() {
+        return documentoRepository.countByStatus("Em análise");
+    }
+
+    public List<Documento> listar(String busca, String status) {
         String termo = busca == null ? "" : busca.toLowerCase(Locale.ROOT).trim();
-        return documentoRepository.findAll().stream()
+        var documentos = status.isBlank() ? documentoRepository.findAll() : documentoRepository.findByStatus(status);
+        return documentos.stream()
                 .filter(d -> d.getNome().toLowerCase(Locale.ROOT).contains(termo)
                         || d.getCategoria().getNome().toLowerCase(Locale.ROOT).contains(termo)
                         || d.getResponsavel().getUsuario().getNome().toLowerCase(Locale.ROOT).contains(termo))

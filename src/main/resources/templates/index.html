@@ -24,8 +24,8 @@
             <nav class="main-nav" id="mainNav" aria-label="Navegação principal">
                 <a class="nav-link active" th:href="@{/}">Início</a>
                 <a class="nav-link" th:href="@{/documentos}">Documentos</a>
-                <a class="nav-link" th:href="@{/#startups}">Startups</a>
-                <a class="nav-link" th:href="@{/#analises}">Análises</a>
+                <a class="nav-link" th:href="@{/cadastros#startups}">Startups</a>
+                <a class="nav-link" th:href="@{/documentos(status='Em análise')}">Análises</a>
                 <a class="nav-link" th:href="@{/#sobre}">Sobre</a>
             </nav>
 
@@ -64,9 +64,9 @@
                     <p>A New Life centraliza o recebimento, a organização e o acompanhamento dos documentos da sua startup.</p>
                 </div>
                 <div class="stats" id="startups">
-                    <article><strong>24</strong><span>Documentos enviados</span></article>
-                    <article><strong>8</strong><span>Startups cadastradas</span></article>
-                    <article id="analises"><strong>5</strong><span>Análises em andamento</span></article>
+                    <article><strong th:text="${totalDocumentos}">0</strong><span>Documentos cadastrados</span></article>
+                    <article><strong th:text="${totalStartups}">0</strong><span>Startups cadastradas</span></article>
+                    <article id="analises"><strong th:text="${totalEmAnalise}">0</strong><span>Documentos em análise</span></article>
                 </div>
             </section>
         </section>
