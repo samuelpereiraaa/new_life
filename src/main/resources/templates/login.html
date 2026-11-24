@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Entrar | New Life</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
-<body><main class="container documents-page"><h1>Entrar no New Life</h1>
+<body class="auth-page"><header th:replace="~{navegacao :: publico}"></header><main class="auth-panel"><h1>Entrar na sua conta</h1>
 <form class="document-form" method="post" th:action="@{/login}">
                 <input type="hidden" name="_csrf" th:value="${session.csrf}">
 <p role="status" th:if="${mensagem}" th:text="${mensagem}"></p>

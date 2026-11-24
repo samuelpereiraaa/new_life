@@ -9,46 +9,20 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
-<body>
-    <header class="site-header">
-        <div class="container header-content">
-            <a class="brand" th:href="@{/}" aria-label="Ir para o início">
-                <span class="brand-logo"><img th:src="@{/img/newlife-logo-dark.png}" alt=""></span>
-                <span class="brand-name">New Life <small>STARTUP DOCS</small></span>
-            </a>
+<body><header th:replace="~{navegacao :: painel('documentos')}"></header>
 
-            <button class="menu-button" id="menuButton" type="button" aria-label="Abrir menu" aria-expanded="false">
-                <span></span><span></span><span></span>
-            </button>
-
-            <nav class="main-nav" id="mainNav" aria-label="Navegação principal">
-                <a class="nav-link" th:href="@{/}">Início</a>
-                <a class="nav-link active" th:href="@{/documentos}">Documentos</a>
-                <a class="nav-link" th:href="@{/startups}">Startups</a>
-                <a class="nav-link" th:href="@{/documentos(status='Em análise')}">Análises</a>
-                <a class="nav-link" th:href="@{/#sobre}">Sobre</a>
-            </nav>
-
-            <label class="search-box">
-                <span aria-hidden="true">⌕</span>
-                <input id="searchInput" type="search" placeholder="Buscar documento..." aria-label="Buscar documento">
-            </label>
-        </div>
-    </header>
 
     <main>
         <section class="documents-view" id="documentsView" aria-labelledby="documentsTitle">
             <div class="container documents-page">
                 <div class="page-heading">
                     <div>
-                        <p class="section-label">CENTRAL DE DOCUMENTOS</p>
-                        <h1 id="documentsTitle">Documentos da startup</h1>
+                        <h1 id="documentsTitle">Documentos</h1>
                         <p>Documentos cadastrados e acompanhados pela equipe.</p>
                     </div>
                     <div class="heading-actions">
-                        <a class="button" th:href="@{/documentos/novo}">+ Novo documento</a>
-                        <a class="button secondary" th:href="@{/cadastros}">Cadastros auxiliares</a>
-                        <a class="button secondary" th:href="@{/}">← Voltar ao início</a>
+                        <a th:unless="${startups.isEmpty()}" class="button" th:href="@{/documentos/novo}">+ Novo documento</a>
+                        <a th:if="${session.podeAdministrar}" class="button secondary" th:href="@{/cadastros}">Cadastros auxiliares</a>
                     </div>
                 </div>
 
@@ -107,16 +81,10 @@
                 </div>
             </div>
         </section>
-        <form class="container" method="post" th:action="@{/logout}">
-                <input type="hidden" name="_csrf" th:value="${session.csrf}"><button class="button secondary" type="submit">Sair</button></form>
+
     </main>
 
-    <footer class="site-footer">
-        <div class="container footer-content">
-            <span>New Life · uma estrutura pronta para sua startup crescer.</span>
-            <span>ORGANIZE · ACOMPANHE · EVOLUA</span>
-        </div>
-    </footer>
+
 
     <script th:src="@{/js/index.js}" defer></script>
 </body>

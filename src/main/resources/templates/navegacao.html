@@ -1,0 +1,12 @@
+<!doctype html><html lang="pt-BR"><body>
+<header class="shell" th:fragment="painel(ativa)"><div class="container shell-inner">
+<a class="wordmark" th:href="@{/inicio}"><span class="brand-logo"><img th:src="@{/img/newlife-logo-dark.png}" alt=""></span><span>New Life</span></a>
+<nav class="workspace-nav" aria-label="Área de trabalho">
+<a th:href="@{/inicio}" th:classappend="${ativa == 'inicio'} ? 'current'">Visão geral</a>
+<a th:href="@{/documentos}" th:classappend="${ativa == 'documentos'} ? 'current'">Documentos</a>
+<a th:href="@{/startups}" th:classappend="${ativa == 'startups'} ? 'current'">Minhas startups</a>
+<a th:if="${session.podeAdministrar}" th:href="@{/cadastros}" th:classappend="${ativa == 'cadastros'} ? 'current'">Administração</a>
+</nav><form method="post" th:action="@{/logout}"><input type="hidden" name="_csrf" th:value="${session.csrf}"><button class="quiet" type="submit">Sair</button></form>
+</div></header>
+<header class="shell" th:fragment="publico"><div class="container shell-inner"><a class="wordmark" th:href="@{/}"><span class="brand-logo"><img th:src="@{/img/newlife-logo-dark.png}" alt=""></span><span>New Life</span></a><nav aria-label="Conta" class="public-nav"><a th:href="@{/login}">Entrar</a><a class="button" th:href="@{/criar-conta}">Criar conta</a></nav></div></header>
+</body></html>

@@ -25,17 +25,17 @@ class AnexoPdfTests {
     @Test
     void criaContaEEntraSemVinculo() throws Exception {
         var mvc = MockMvcBuilders.webAppContextSetup(contexto).build();
+        mvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("apresentacao"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Criar minha conta")));
+        mvc.perform(get("/inicio")).andExpect(redirectedUrl("/login"));
         var sessao = (org.springframework.mock.web.MockHttpSession) mvc.perform(get("/login"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("/criar-conta")))
                 .andReturn().getRequest().getSession();
         String csrf = (String) sessao.getAttribute("csrf");
         mvc.perform(get("/criar-conta").session(sessao)).andExpect(status().isOk());
-        mvc.perform(post("/criar-conta").session(sessao).param("_csrf", csrf).param("nome", "Nova conta")
-                .param("email", "nova@example.org").param("senha", "MinhaSenha123"))
-                .andExpect(redirectedUrl("/login"));
-        var autenticada = (org.springframework.mock.web.MockHttpSession) mvc.perform(post("/login").session(sessao)
-                .param("_csrf", csrf).param("email", "nova@example.org").param("senha", "MinhaSenha123"))
-                .andExpect(redirectedUrl("/")).andReturn().getRequest().getSession();
+        var autenticada = (org.springframework.mock.web.MockHttpSession) mvc.perform(post("/criar-conta").session(sessao)
+                .param("_csrf", csrf).param("nome", "Nova conta").param("email", "nova@example.org").param("senha", "MinhaSenha123"))
+                .andExpect(redirectedUrl("/inicio")).andReturn().getRequest().getSession();
         mvc.perform(get("/startups").session(autenticada)).andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Peça ao administrador")));
     }
@@ -54,9 +54,9 @@ class AnexoPdfTests {
                 new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("SenhaTeste123"));
         var sessao = (org.springframework.mock.web.MockHttpSession) publico.perform(post("/login").session(anonima)
                 .param("_csrf", (String) anonima.getAttribute("csrf")).param("email","pdf@example.org")
-                .param("senha","SenhaTeste123")).andExpect(redirectedUrl("/")).andReturn().getRequest().getSession();
-        publico.perform(get("/").session(sessao)).andExpect(status().isOk());
-        var mvc = MockMvcBuilders.webAppContextSetup(contexto).defaultRequest(get("/").session(sessao)
+                .param("senha","SenhaTeste123")).andExpect(redirectedUrl("/inicio")).andReturn().getRequest().getSession();
+        publico.perform(get("/inicio").session(sessao)).andExpect(status().isOk());
+        var mvc = MockMvcBuilders.webAppContextSetup(contexto).defaultRequest(get("/inicio").session(sessao)
                 .param("_csrf",(String) sessao.getAttribute("csrf"))).build();
         byte[] bytes = "%PDF-1.4\nconteudo\n%%EOF".getBytes(java.nio.charset.StandardCharsets.US_ASCII);
         var pdf = new MockMultipartFile("arquivo", "teste.pdf", "application/pdf", bytes);
@@ -67,7 +67,7 @@ class AnexoPdfTests {
         Long id = jdbc.queryForObject("select id from documento where nome_pdf='teste.pdf'", Long.class);
         mvc.perform(get("/documentos/{id}/arquivo", id)).andExpect(status().isOk())
                 .andExpect(content().contentType("application/pdf")).andExpect(content().bytes(bytes));
-        mvc.perform(get("/")).andExpect(status().isOk())
+        mvc.perform(get("/inicio")).andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("/startups")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("<strong>0</strong><span>Documentos em análise")));
         mvc.perform(get("/documentos").param("status", "Em análise")).andExpect(status().isOk())
@@ -76,7 +76,7 @@ class AnexoPdfTests {
         jdbc.update("insert into startup_usuario values(71001,71003)");
         var colega = new org.springframework.mock.web.MockHttpSession();
         colega.setAttribute("usuarioId",71003L);
-        publico.perform(get("/").session(colega)).andExpect(status().isOk());
+        publico.perform(get("/inicio").session(colega)).andExpect(status().isOk());
         jdbc.update("insert into startup(id,nome) values(71004,'Segunda startup')");
         jdbc.update("insert into startup_usuario values(71004,71001)");
         jdbc.update("insert into documento(startup_id,categoria_id,responsavel_id,nome) values(71004,71001,71001,'Segundo documento')");
@@ -132,6 +132,6 @@ class AnexoPdfTests {
         publico.perform(post("/cadastros/vinculos").session(outra).param("_csrf",token)
                 .param("startupId","71001").param("usuarioId","71002")).andExpect(status().isForbidden());
         publico.perform(post("/logout").session(outra)).andExpect(status().isForbidden());
-        mvc.perform(post("/logout")).andExpect(redirectedUrl("/login"));
+        mvc.perform(post("/logout")).andExpect(redirectedUrl("/"));
     }
 }

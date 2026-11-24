@@ -30,7 +30,7 @@ public class PageController {
         return (Long) request.getSession(false).getAttribute("usuarioId");
     }
 
-    @GetMapping({"/", "/inicio"})
+    @GetMapping("/inicio")
     public String inicio(Model model) {
         model.addAttribute("totalDocumentos", documentoService.contarDocumentos(ator(), ""));
         model.addAttribute("totalStartups", cadastrosService.startupsDoUsuario(ator()).size());

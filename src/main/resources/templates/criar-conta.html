@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Criar conta | New Life</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
-<body><main class="container documents-page">
+<body class="auth-page"><header th:replace="~{navegacao :: publico}"></header><main class="auth-panel">
 <h1>Criar conta</h1>
 <form class="document-form" method="post" th:action="@{/criar-conta}" th:object="${conta}">
     <input type="hidden" name="_csrf" th:value="${session.csrf}">

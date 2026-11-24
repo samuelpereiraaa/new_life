@@ -35,7 +35,7 @@ A migration foi baseada no DDL já integrado à branch `main`. Usa
 
 ## Primeiro uso
 
-Em `/login`, clique em **Criar conta** para cadastrar nome, e-mail e senha. Uma conta nova pode entrar imediatamente e aguarda o vínculo do administrador para acessar documentos de uma startup.
+A página pública `/` apresenta a plataforma e oferece **Entrar** e **Criar conta**. Ao concluir o cadastro, a pessoa entra automaticamente no painel `/inicio`. Uma conta nova pode usar o painel imediatamente e aguarda o vínculo do administrador para acessar documentos de uma startup.
 
 Configure `NEWLIFE_ADMIN_EMAIL` com o e-mail de uma conta administrativa sob seu controle. Se essa conta ainda não existir, configure também `NEWLIFE_ADMIN_PASSWORD` ao iniciar para criá-la e remova a senha inicial do ambiente depois. O cadastro público reserva o endereço administrativo configurado.
 

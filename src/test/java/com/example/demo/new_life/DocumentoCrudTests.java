@@ -51,8 +51,8 @@ class DocumentoCrudTests {
         jdbc.update("insert into usuario(nome,email,senha_hash) values('Admin','admin@teste.local',?)",
                 new BCryptPasswordEncoder().encode("Teste12345"));
         csrf = token(get("/login").body());
-        assertRedirect(post("/login", "email=admin%40teste.local&senha=Teste12345"), "/");
-        csrf = token(get("/").body());
+        assertRedirect(post("/login", "email=admin%40teste.local&senha=Teste12345"), "/inicio");
+        csrf = token(get("/inicio").body());
         assertTrue(get("/documentos").body().contains("Nenhum documento encontrado"));
         assertTrue(get("/documentos/novo").body().contains("cadastros auxiliares"));
         assertTrue(get("/cadastros").body().contains("Nenhum vínculo cadastrado"));

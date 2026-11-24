@@ -8,20 +8,8 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
-<body>
-    <header class="site-header">
-        <div class="container header-content">
-            <a class="brand" th:href="@{/}" aria-label="Ir para o início">
-                <span class="brand-logo"><img th:src="@{/img/newlife-logo-dark.png}" alt=""></span>
-                <span class="brand-name">New Life <small>STARTUP DOCS</small></span>
-            </a>
-            <nav class="main-nav" aria-label="Navegação principal">
-                <a class="nav-link" th:href="@{/}">Início</a>
-                <a class="nav-link active" th:href="@{/documentos}">Documentos</a>
-                <a class="nav-link" th:href="@{/documentos/novo}">Novo documento</a>
-            </nav>
-        </div>
-    </header>
+<body><header th:replace="~{navegacao :: painel('documentos')}"></header>
+
 
     <main>
         <section class="container documents-page" aria-labelledby="detailTitle">
@@ -105,11 +93,10 @@
                 </form>
             </div>
         </section>
-        <form class="container" method="post" th:action="@{/logout}">
-                <input type="hidden" name="_csrf" th:value="${session.csrf}"><button class="button secondary" type="submit">Sair</button></form>
+
     </main>
 
-    <footer class="site-footer"><div class="container footer-content"><span>New Life · protótipo Spring Boot</span><span>ORGANIZE · ACOMPANHE · EVOLUA</span></div></footer>
+
 </body>
 
 </html>

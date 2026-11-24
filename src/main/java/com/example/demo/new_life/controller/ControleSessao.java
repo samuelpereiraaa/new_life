@@ -28,6 +28,10 @@ public class ControleSessao implements WebMvcConfigurer, HandlerInterceptor {
     public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) throws Exception {
         if (!(handler instanceof HandlerMethod metodo)
                 || !metodo.getBeanType().getPackageName().equals(ControleSessao.class.getPackageName())) return true;
+        if (metodo.getBeanType() == SessaoController.class && metodo.getMethod().getName().equals("apresentacao")) {
+            res.setHeader("Cache-Control", "no-store");
+            return true;
+        }
         boolean login = metodo.getBeanType() == SessaoController.class && java.util.Set.of("login", "entrar", "cadastro", "cadastrar").contains(metodo.getMethod().getName());
         var sessao = req.getSession(login);
         Long id = sessao == null ? null : (Long) sessao.getAttribute("usuarioId");
@@ -49,6 +53,7 @@ public class ControleSessao implements WebMvcConfigurer, HandlerInterceptor {
         }
         boolean admin = usuario.map(u -> u.getEmail().equalsIgnoreCase(adminEmail)).orElse(false);
         req.setAttribute("admin", admin);
+        sessao.setAttribute("podeAdministrar", admin);
         if (metodo.getBeanType() == CadastrosController.class && "POST".equals(req.getMethod()) && !admin) {
             res.sendError(403);
             return false;

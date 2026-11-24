@@ -6,7 +6,7 @@
     <title>New Life | Cadastros auxiliares</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
+<body><header th:replace="~{navegacao :: painel('cadastros')}"></header>
 <main class="container documents-page">
     <div class="page-heading">
         <div><h1>Cadastros auxiliares</h1><p>Cadastre uma startup, um usuário e uma categoria. Depois, vincule o usuário à startup.</p></div>
@@ -80,8 +80,7 @@
             </tbody>
         </table>
     </div>
-    <form class="container" method="post" th:action="@{/logout}">
-                <input type="hidden" name="_csrf" th:value="${session.csrf}"><button class="button secondary" type="submit">Sair</button></form>
+
     </main>
 </body>
 </html>

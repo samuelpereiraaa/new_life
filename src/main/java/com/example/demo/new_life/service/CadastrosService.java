@@ -54,7 +54,7 @@ public class CadastrosService {
     }
 
     @Transactional
-    public void cadastrarUsuario(UsuarioForm form) {
+    public Usuario cadastrarUsuario(UsuarioForm form) {
         if (form.getSenha() == null || form.getSenha().isBlank()) {
             throw new RegraNegocioException("senha", "Informe a senha.");
         }
@@ -65,7 +65,7 @@ public class CadastrosService {
         usuario.setNome(form.getNome().trim());
         usuario.setEmail(form.getEmail().trim().toLowerCase(Locale.ROOT));
         usuario.setSenhaHash(encoder.encode(form.getSenha()));
-        try { usuarioRepository.saveAndFlush(usuario); }
+        try { return usuarioRepository.saveAndFlush(usuario); }
         catch (DataIntegrityViolationException ex) {
             throw new RegraNegocioException("email", "E-mail já cadastrado.");
         }

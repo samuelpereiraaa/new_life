@@ -20,6 +20,12 @@ public class SessaoController {
     @org.springframework.beans.factory.annotation.Value("${NEWLIFE_ADMIN_EMAIL:}")
     private String adminEmail;
 
+    @GetMapping("/")
+    public String apresentacao(HttpServletRequest request) {
+        var sessao = request.getSession(false);
+        return sessao != null && sessao.getAttribute("usuarioId") != null ? "redirect:/inicio" : "apresentacao";
+    }
+
     @GetMapping("/criar-conta")
     public String cadastro(@ModelAttribute("conta") com.example.demo.new_life.model.UsuarioForm conta) {
         return "criar-conta";
@@ -28,15 +34,13 @@ public class SessaoController {
     @PostMapping("/criar-conta")
     public String cadastrar(@jakarta.validation.Valid @ModelAttribute("conta") com.example.demo.new_life.model.UsuarioForm conta,
             org.springframework.validation.BindingResult erros,
-            org.springframework.web.servlet.mvc.support.RedirectAttributes flash) {
+            HttpServletRequest request) {
         if (!erros.hasFieldErrors("email") && adminEmail.strip().equalsIgnoreCase(conta.getEmail().strip())) {
             erros.rejectValue("email", "reservado", "Este e-mail está reservado para a administração.");
         }
         if (!erros.hasErrors()) {
             try {
-                cadastros.cadastrarUsuario(conta);
-                flash.addFlashAttribute("mensagem", "Conta criada. Entre com seu e-mail e senha.");
-                return "redirect:/login";
+                return iniciarSessao(request, cadastros.cadastrarUsuario(conta).getId());
             } catch (com.example.demo.new_life.service.RegraNegocioException ex) {
                 ex.getErros().forEach((campo, mensagem) -> erros.rejectValue(campo, "cadastro", mensagem));
             }
@@ -56,14 +60,18 @@ public class SessaoController {
             model.addAttribute("erro", "E-mail ou senha inválidos.");
             return "login";
         }
+        return iniciarSessao(request, usuario.get().getId());
+    }
+
+    private String iniciarSessao(HttpServletRequest request, Long id) {
         request.getSession().invalidate();
-        request.getSession(true).setAttribute("usuarioId", usuario.get().getId());
-        return "redirect:/";
+        request.getSession(true).setAttribute("usuarioId", id);
+        return "redirect:/inicio";
     }
 
     @PostMapping("/logout")
     public String sair(HttpServletRequest request) {
         request.getSession().invalidate();
-        return "redirect:/login";
+        return "redirect:/";
     }
 }
